@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeyTrainer · Phase 2 · Typing Engine Prototype</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS — Precision Instrument Aesthetic
+   ============================================================ */
+:root {
+  /* Backgrounds — warm deep charcoal, never pure black */
+  --bg-root: #1a1c1e;
+  --bg-surface: #222427;
+  --bg-elevated: #2a2d30;
+  --bg-inset: #181a1c;
+
+  /* Text — warm white, not clinical */
+  --text-primary: #e8e6e3;
+  --text-secondary: #9c9a95;
+  --text-tertiary: #5f5d59;
+  --text-inverse: #1a1c1e;
+
+  /* Accent — vintage gold, like precision instrument dials */
+  --accent: #c9a84c;
+  --accent-dim: #8a7340;
+  --accent-glow: rgba(201, 168, 76, 0.15);
+
+  /* Semantic — typing feedback */
+  --correct: #6b9b7a;
+  --correct-bg: rgba(107, 155, 122, 0.12);
+  --wrong: #b56565;
+  --wrong-bg: rgba(181, 101, 101, 0.18);
+  --cursor: #c9a84c;
+  --pending: #4a4950;
+
+  /* 8 Finger Zones */
+  --f-l-pinky: #9d98c9;
+  --f-l-ring: #8aadda;
+  --f-l-middle: #78c7ac;
+  --f-l-index: #9dc478;
+  --f-r-index: #e5d5b0;
+  --f-r-middle: #e5b868;
+  --f-r-ring: #e5a0b8;
+  --f-r-pinky: #e5a0a0;
+  --f-thumb: #bcb8ad;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* Typography */
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-key: 0 2px 0 rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.3);
+
+  /* Transitions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur-normal: 250ms;
+  --dur-slow: 500ms;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-root);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  /* 13-inch MacBook Air/Pro: 2560×1600 → 16:10 aspect ratio */
+  /* Ensure the viewport simulates a 16:10 screen */
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app {
+  display: flex;
+  height: 100vh;
+  background: var(--bg-root);
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 196px;
+  background: var(--bg-surface);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-md) var(--space-md);
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.sidebar-brand svg { width: 22px; height: 22px; }
+
+.sidebar-brand span {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out-expo);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.nav-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.nav-item--active {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.nav-section {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  padding: var(--space-md) var(--space-sm) 4px;
+  font-weight: 600;
+}
+
+/* --- Main Content --- */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- Top Bar --- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px var(--space-lg);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.topbar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.topbar-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.topbar-mode {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.mode-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out-expo);
+  font-family: var(--font-sans);
+}
+
+.mode-btn:hover { color: var(--text-primary); background: var(--bg-elevated); }
+.mode-btn--active {
+  color: var(--accent);
+  background: var(--accent-glow);
+  border-color: rgba(201, 168, 76, 0.2);
+}
+
+/* --- Content Area --- */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--space-md) var(--space-xl);
+  gap: var(--space-md);
+  overflow-y: auto;
+}
+
+/* ============================================================
+   TYPING AREA
+   ============================================================ */
+.typing-container {
+  width: 100%;
+  max-width: 960px;
+}
+
+.typing-prompt {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.typing-prompt::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+}
+
+.typing-text {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  /* 3-line display: line-height 1.75 × 18px × 3 lines + vertical padding */
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  background: var(--bg-inset);
+  padding: 14px var(--space-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,0.04);
+  position: relative;
+  /* Exactly 3 lines height: 18px × 1.75 × 3 = 94.5px + 28px padding = ~123px */
+  height: calc(1.75em * 3 + 28px);
+  overflow-y: scroll;
+  overflow-x: hidden;
+  word-break: break-all;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+  display: block;
+  /* Hide scrollbar but keep scroll functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.typing-text::-webkit-scrollbar { display: none; }
+
+.typing-char {
+  display: inline;
+  position: relative;
+  transition: color var(--dur-fast) var(--ease-out-expo),
+              background-color var(--dur-fast) var(--ease-out-expo);
+  border-radius: 2px;
+  padding: 1px 0;
+}
+
+.typing-char--correct {
+  color: var(--correct);
+}
+
+.typing-char--wrong {
+  color: var(--wrong);
+  background: var(--wrong-bg);
+  animation: char-shake 250ms var(--ease-out-expo);
+}
+
+.typing-char--current {
+  color: var(--text-inverse);
+  background: var(--cursor);
+  animation: cursor-blink 1.2s ease-in-out infinite;
+}
+
+.typing-char--pending {
+  color: var(--pending);
+}
+
+@keyframes char-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+@keyframes cursor-blink {
+  0%, 60%, 100% { opacity: 1; }
+  30% { opacity: 0.25; }
+}
+
+/* --- Word Complete Flash --- */
+.typing-text .word-flash {
+  animation: word-pop 300ms var(--ease-out-expo);
+  display: inline-block;
+}
+
+@keyframes word-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* ============================================================
+   STATS ROW
+   ============================================================ */
+.stats-row {
+  display: flex;
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 960px;
+}
+
+.stat-card {
+  flex: 1;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: transform var(--dur-normal) var(--ease-out-expo),
+              border-color var(--dur-normal) var(--ease-out-expo);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.08);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.stat-value--accent { color: var(--accent); }
+.stat-value--correct { color: var(--correct); }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+}
+
+.stat-delta {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--correct);
+}
+
+.stat-delta--down { color: var(--wrong); }
+
+/* --- Mini Sparkline --- */
+.stat-sparkline {
+  width: 100%;
+  height: 24px;
+  margin-top: 2px;
+}
+
+.stat-sparkline svg { width: 100%; height: 100%; }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.progress-section {
+  width: 100%;
+  max-width: 960px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.progress-label {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.progress-percent {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.progress-track {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-surface);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+  border-radius: 2px;
+  transition: width var(--dur-slow) var(--ease-out-expo);
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* ============================================================
+   VIRTUAL KEYBOARD
+   ============================================================ */
+.keyboard-wrapper {
+  width: 100%;
+  max-width: 960px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.keyboard-legend {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.keyboard-row--r1 { padding-left: 0; }
+.keyboard-row--r2 { padding-left: 24px; }
+.keyboard-row--r3 { padding-left: 30px; }
+.keyboard-row--r4 { padding-left: 36px; }
+.keyboard-row--r5 { padding-left: 24px; }
+
+.keycap {
+  height: 42px;
+  min-width: 42px;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out-expo);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-key);
+}
+
+.keycap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--dur-normal) var(--ease-out-expo);
+  border-radius: 7px;
+  pointer-events: none;
+}
+
+/* Finger zone tints */
+.keycap[data-finger="L-pinky"]::before  { background: var(--f-l-pinky); }
+.keycap[data-finger="L-ring"]::before   { background: var(--f-l-ring); }
+.keycap[data-finger="L-middle"]::before { background: var(--f-l-middle); }
+.keycap[data-finger="L-index"]::before  { background: var(--f-l-index); }
+.keycap[data-finger="R-index"]::before  { background: var(--f-r-index); }
+.keycap[data-finger="R-middle"]::before { background: var(--f-r-middle); }
+.keycap[data-finger="R-ring"]::before   { background: var(--f-r-ring); }
+.keycap[data-finger="R-pinky"]::before  { background: var(--f-r-pinky); }
+.keycap[data-finger="thumb"]::before    { background: var(--f-thumb); }
+
+/* Show finger zone tints */
+.keyboard-wrapper.show-zones .keycap::before { opacity: 0.25; }
+
+.keycap--active {
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-color: var(--accent);
+  transform: translateY(1px) scale(1.05);
+  box-shadow: 0 0 14px var(--accent-glow), 0 1px 0 rgba(0,0,0,0.3);
+  z-index: 2;
+}
+.keycap--active::before { opacity: 0 !important; }
+
+.keycap--pressed {
+  transform: translateY(2px) scale(0.96);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+  transition: all 60ms ease-out;
+}
+
+.keycap--wrong-flash {
+  animation: key-wrong 400ms var(--ease-out-expo);
+}
+
+@keyframes key-wrong {
+  0% { background: var(--wrong); color: #fff; border-color: var(--wrong); }
+  100% { background: var(--bg-elevated); color: var(--text-secondary); border-color: rgba(255,255,255,0.06); }
+}
+
+/* Home row markers */
+.keycap--home-f,
+.keycap--home-j {
+  position: relative;
+}
+
+.keycap--home-f::after,
+.keycap--home-j::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 3px;
+  background: var(--text-tertiary);
+  border-radius: 2px;
+}
+
+/* Wide keys */
+.keycap--w125 { min-width: 54px; }
+.keycap--w15  { min-width: 64px; }
+.keycap--w175 { min-width: 75px; }
+.keycap--w2   { min-width: 86px; }
+.keycap--w225 { min-width: 96px; }
+.keycap--w275 { min-width: 118px; }
+.keycap--w625 { min-width: 268px; }
+
+.keycap-label-sm {
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+/* Zone toggle */
+.zone-toggle {
+  margin-left: auto;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all var(--dur-fast) var(--ease-out-expo);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.zone-toggle:hover { border-color: rgba(255,255,255,0.12); color: var(--text-primary); }
+.zone-toggle--on { color: var(--accent); border-color: rgba(201, 168, 76, 0.25); background: var(--accent-glow); }
+
+/* ============================================================
+   TOAST / RESET BUTTON
+   ============================================================ */
+.reset-btn {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-out-expo);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.reset-btn:hover {
+  color: var(--accent);
+  border-color: rgba(201, 168, 76, 0.3);
+}
+
+.completion-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 28, 30, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-slow) var(--ease-out-expo);
+}
+
+.completion-overlay--visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.completion-card {
+  background: var(--bg-surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3xl) var(--space-2xl);
+  text-align: center;
+  max-width: 420px;
+  width: 90%;
+}
+
+.completion-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  margin-bottom: var(--space-sm);
+}
+
+.completion-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xl);
+}
+
+.completion-stats {
+  display: flex;
+  gap: var(--space-xl);
+  justify-content: center;
+  margin-bottom: var(--space-xl);
+}
+
+.completion-stat-val {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.completion-stat-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .typing-text { font-size: 15px; padding: var(--space-md) var(--space-lg); height: calc(1.75em * 3 + 24px); }
+  .stats-row { flex-wrap: wrap; }
+  .stat-card { min-width: 100px; }
+  .stat-value { font-size: 24px; }
+  .keyboard-row--r2 { padding-left: 14px; }
+  .keyboard-row--r3 { padding-left: 18px; }
+  .keyboard-row--r4 { padding-left: 22px; }
+  .keyboard-row--r5 { padding-left: 14px; }
+  .keycap { height: 36px; min-width: 36px; font-size: 10px; }
+  .keycap--w125 { min-width: 46px; }
+  .keycap--w15  { min-width: 54px; }
+  .keycap--w175 { min-width: 62px; }
+  .keycap--w2   { min-width: 74px; }
+  .keycap--w225 { min-width: 82px; }
+  .keycap--w275 { min-width: 98px; }
+  .keycap--w625 { min-width: 222px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <svg viewBox="0 0 28 28" fill="none">
+        <rect x="2" y="4" width="24" height="16" rx="3" stroke="#c9a84c" stroke-width="1.5" fill="none"/>
+        <rect x="5" y="7" width="18" height="10" rx="1.5" fill="#c9a84c" opacity="0.15"/>
+        <line x1="8" y1="12" x2="20" y2="12" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="8" y1="15" x2="17" y2="15" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        <line x1="8" y1="18" x2="14" y2="18" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+      </svg>
+      <span>KeyTrainer</span>
+    </div>
+
+    <div class="nav-section">Training</div>
+    <a class="nav-item nav-item--active" href="#">
+      <svg viewBox="0 0 18 18" fill="none"><rect x="1" y="3" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><rect x="4" y="6" width="10" height="6" rx="1" fill="currentColor" opacity="0.2"/></svg>
+      Finger Training
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Free Practice
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h12M3 13h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Lessons
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5v5l-3 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Speed Test
+    </a>
+
+    <div class="nav-section">Analysis</div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 13l3-5 2 3 3-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Statistics
+    </a>
+
+    <div style="margin-top: auto;">
+      <a class="nav-item" href="#">
+        <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M9 1v3m0 10v3M1 9h3m10 0h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Settings
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-title">Level 1 · Home Row</span>
+        <span class="topbar-badge">Finger Training</span>
+      </div>
+      <div class="topbar-mode">
+        <button class="mode-btn mode-btn--active">QWERTY</button>
+        <button class="mode-btn">Dvorak</button>
+        <button class="mode-btn">Colemak</button>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+      <!-- TYPING AREA -->
+      <div class="typing-container">
+        <div class="typing-prompt">Type the highlighted text below</div>
+        <div class="typing-text" id="typingText">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-row" id="statsRow">
+        <div class="stat-card">
+          <span class="stat-label">WPM</span>
+          <span class="stat-value stat-value--accent" id="statWpm">0</span>
+          <div class="stat-sparkline" id="sparkWpm"></div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Accuracy</span>
+          <span class="stat-value stat-value--correct" id="statAcc">100%</span>
+          <span class="stat-delta" id="statDelta">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Time</span>
+          <span class="stat-value" id="statTime">00:00</span>
+          <span class="stat-label" id="statFcs" style="margin-top:4px">FCS • 100%</span>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="progress-section">
+        <div class="progress-info">
+          <span class="progress-label" id="progressLabel">0 / 0 characters</span>
+          <span class="progress-percent" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- KEYBOARD -->
+      <div class="keyboard-wrapper show-zones" id="keyboardWrapper">
+        <div style="display:flex;align-items:center;margin-bottom:var(--space-md);">
+          <div class="keyboard-legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-l-pinky)"></span>L-Pinky</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-l-ring)"></span>L-Ring</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-l-middle)"></span>L-Middle</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-l-index)"></span>L-Index</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-r-index)"></span>R-Index</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-r-middle)"></span>R-Middle</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-r-ring)"></span>R-Ring</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--f-r-pinky)"></span>R-Pinky</span>
+          </div>
+          <button class="zone-toggle zone-toggle--on" id="zoneToggle" onclick="toggleZones()">
+            <span>Finger Zones</span>
+          </button>
+        </div>
+        <div id="keyboardRows">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- RESET -->
+      <button class="reset-btn" onclick="resetExercise()" style="margin-top:var(--space-sm)">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7a5 5 0 0 1 8.5-3.5M12 7a5 5 0 0 1-8.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11 1v3H8M3 13v-3h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reset Exercise
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- COMPLETION OVERLAY -->
+<div class="completion-overlay" id="completionOverlay">
+  <div class="completion-card">
+    <div class="completion-title">Well Done!</div>
+    <div class="completion-subtitle">Level 1 complete. Your results:</div>
+    <div class="completion-stats">
+      <div>
+        <div class="completion-stat-val" style="color:var(--accent)" id="finalWpm">0</div>
+        <div class="completion-stat-lbl">WPM</div>
+      </div>
+      <div>
+        <div class="completion-stat-val" style="color:var(--correct)" id="finalAcc">0%</div>
+        <div class="completion-stat-lbl">Accuracy</div>
+      </div>
+      <div>
+        <div class="completion-stat-val" id="finalTime">00:00</div>
+        <div class="completion-stat-lbl">Time</div>
+      </div>
+    </div>
+    <button class="reset-btn" onclick="resetExercise()" style="margin:0 auto">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v3m0 6v3M1 7h3m6 0h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Next Level
+    </button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   KEYBOARD LAYOUT DEFINITION
+   ============================================================ */
+const FINGER_MAP = {
+  '`': 'L-pinky', '1': 'L-pinky', '2': 'L-ring', '3': 'L-middle', '4': 'L-index',
+  '5': 'L-index', '6': 'R-index', '7': 'R-index', '8': 'R-middle', '9': 'R-ring',
+  '0': 'R-pinky', '-': 'R-pinky', '=': 'R-pinky',
+  'q': 'L-pinky', 'w': 'L-ring', 'e': 'L-middle', 'r': 'L-index', 't': 'L-index',
+  'y': 'R-index', 'u': 'R-index', 'i': 'R-middle', 'o': 'R-ring', 'p': 'R-pinky',
+  '[': 'R-pinky', ']': 'R-pinky', '\\': 'R-pinky',
+  'a': 'L-pinky', 's': 'L-ring', 'd': 'L-middle', 'f': 'L-index', 'g': 'L-index',
+  'h': 'R-index', 'j': 'R-index', 'k': 'R-middle', 'l': 'R-ring', ';': 'R-pinky',
+  "'": 'R-pinky',
+  'z': 'L-pinky', 'x': 'L-ring', 'c': 'L-middle', 'v': 'L-index', 'b': 'L-index',
+  'n': 'R-index', 'm': 'R-index', ',': 'R-middle', '.': 'R-ring', '/': 'R-pinky',
+  ' ': 'thumb'
+};
+
+const KEYBOARD_ROWS = [
+  [
+    { key: '`', w: 1 }, { key: '1', w: 1 }, { key: '2', w: 1 }, { key: '3', w: 1 },
+    { key: '4', w: 1 }, { key: '5', w: 1 }, { key: '6', w: 1 }, { key: '7', w: 1 },
+    { key: '8', w: 1 }, { key: '9', w: 1 }, { key: '0', w: 1 }, { key: '-', w: 1 },
+    { key: '=', w: 1 }, { key: '⌫', w: 2, code: 'Backspace', display: 'delete' }
+  ],
+  [
+    { key: '⇥', w: 1.5, code: 'Tab', display: 'tab' },
+    { key: 'Q', w: 1, code: 'KeyQ' }, { key: 'W', w: 1, code: 'KeyW' }, { key: 'E', w: 1, code: 'KeyE' },
+    { key: 'R', w: 1, code: 'KeyR' }, { key: 'T', w: 1, code: 'KeyT' },
+    { key: 'Y', w: 1, code: 'KeyY' }, { key: 'U', w: 1, code: 'KeyU' }, { key: 'I', w: 1, code: 'KeyI' },
+    { key: 'O', w: 1, code: 'KeyO' }, { key: 'P', w: 1, code: 'KeyP' },
+    { key: '[', w: 1 }, { key: ']', w: 1 }, { key: '\\', w: 1 }
+  ],
+  [
+    { key: '⇪', w: 1.75, code: 'CapsLock', display: 'caps' },
+    { key: 'A', w: 1, code: 'KeyA' }, { key: 'S', w: 1, code: 'KeyS' }, { key: 'D', w: 1, code: 'KeyD' },
+    { key: 'F', w: 1, code: 'KeyF', home: true }, { key: 'G', w: 1, code: 'KeyG' },
+    { key: 'H', w: 1, code: 'KeyH' }, { key: 'J', w: 1, code: 'KeyJ', home: true },
+    { key: 'K', w: 1, code: 'KeyK' }, { key: 'L', w: 1, code: 'KeyL' },
+    { key: ';', w: 1 }, { key: "'", w: 1 },
+    { key: '⏎', w: 2.25, code: 'Enter', display: 'return' }
+  ],
+  [
+    { key: '⇧', w: 2.25, code: 'ShiftLeft', display: 'shift' },
+    { key: 'Z', w: 1, code: 'KeyZ' }, { key: 'X', w: 1, code: 'KeyX' }, { key: 'C', w: 1, code: 'KeyC' },
+    { key: 'V', w: 1, code: 'KeyV' }, { key: 'B', w: 1, code: 'KeyB' },
+    { key: 'N', w: 1, code: 'KeyN' }, { key: 'M', w: 1, code: 'KeyM' },
+    { key: ',', w: 1 }, { key: '.', w: 1 }, { key: '/', w: 1 },
+    { key: '⇧', w: 2.75, code: 'ShiftRight', display: 'shift' }
+  ],
+  [
+    { key: 'fn', w: 1 }, { key: '⌃', w: 1.25, code: 'ControlLeft', display: 'ctrl' },
+    { key: '⌥', w: 1.25, code: 'AltLeft', display: 'opt' },
+    { key: '⌘', w: 1.25, code: 'MetaLeft', display: 'cmd' },
+    { key: '', w: 6.25, code: 'Space', display: 'space' },
+    { key: '⌘', w: 1.25, code: 'MetaRight', display: 'cmd' },
+    { key: '⌥', w: 1.25, code: 'AltRight', display: 'opt' }
+  ]
+];
+
+/* ============================================================
+   BUILD KEYBOARD DOM
+   ============================================================ */
+function buildKeyboard() {
+  const container = document.getElementById('keyboardRows');
+  const rowClasses = ['keyboard-row--r1', 'keyboard-row--r2', 'keyboard-row--r3', 'keyboard-row--r4', 'keyboard-row--r5'];
+
+  KEYBOARD_ROWS.forEach((row, ri) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'keyboard-row ' + (rowClasses[ri] || '');
+
+    row.forEach(k => {
+      const cap = document.createElement('div');
+      cap.className = 'keycap';
+      const w = k.w || 1;
+      if (w === 1.25) cap.classList.add('keycap--w125');
+      else if (w === 1.5) cap.classList.add('keycap--w15');
+      else if (w === 1.75) cap.classList.add('keycap--w175');
+      else if (w === 2) cap.classList.add('keycap--w2');
+      else if (w === 2.25) cap.classList.add('keycap--w225');
+      else if (w === 2.75) cap.classList.add('keycap--w275');
+      else if (w === 6.25) cap.classList.add('keycap--w625');
+
+      // Home row markers
+      if (k.home) cap.classList.add('keycap--home-' + k.key.toLowerCase());
+
+      // Finger zone
+      const lowerKey = (k.code ? k.code.replace('Key', '').toLowerCase() : k.key.toLowerCase());
+      const finger = FINGER_MAP[lowerKey] || FINGER_MAP[k.key.toLowerCase()] || null;
+      if (finger) cap.setAttribute('data-finger', finger);
+
+      // Data attributes
+      const code = k.code || ('Key' + k.key.toUpperCase());
+      cap.setAttribute('data-code', code);
+      const fingerChar = (k.key.length === 1) ? k.key.toLowerCase() : lowerKey;
+      cap.setAttribute('data-char', fingerChar);
+
+      // Label
+      const display = k.display || k.key;
+      if (display.length <= 2) {
+        cap.textContent = display;
+      } else {
+        cap.innerHTML = '<span class="keycap-label-sm">' + display + '</span>';
+      }
+
+      rowEl.appendChild(cap);
+    });
+
+    container.appendChild(rowEl);
+  });
+}
+
+/* ============================================================
+   SAMPLE TEXTS
+   ============================================================ */
+const SAMPLE_TEXTS = {
+  homeRow: "asdf jkl; asdf jkl; fdsa ;lkj fdsa ;lkj sad fad dad jak lad fad ask had all flask falls jak sad fad lad dad all jak flask falls sad fad ask jak had",
+  topRow: "qwert yuiop qwert yuiop were quiet quite pretty tweet petty typewriter pottery",
+  bottomRow: "zxcvb nm,./ zxcvb nm,./ zxcvb nm,.zxcvb nm,.cvbn m,./",
+  mixed: "the quick brown fox jumps over the lazy dog"
+};
+
+let targetText = '';
+let currentIndex = 0;
+let totalKeystrokes = 0;
+let correctKeystrokes = 0;
+let correctChars = 0;
+let incorrectChars = 0;
+let startTime = null;
+let timerInterval = null;
+let isComplete = false;
+let lastKeystrokeTime = null;
+let wpmHistory = [];
+let exerciseMode = 'homeRow';
+
+/* ============================================================
+   TYPING ENGINE
+   ============================================================ */
+function loadText(mode) {
+  exerciseMode = mode;
+  targetText = SAMPLE_TEXTS[mode] || SAMPLE_TEXTS.homeRow;
+  resetExercise();
+}
+
+function resetExercise() {
+  currentIndex = 0;
+  totalKeystrokes = 0;
+  correctKeystrokes = 0;
+  correctChars = 0;
+  incorrectChars = 0;
+  startTime = null;
+  isComplete = false;
+  lastKeystrokeTime = null;
+  wpmHistory = [];
+
+  clearInterval(timerInterval);
+  timerInterval = null;
+
+  document.getElementById('completionOverlay').classList.remove('completion-overlay--visible');
+  document.getElementById('statTime').textContent = '00:00';
+  document.getElementById('statWpm').textContent = '0';
+  document.getElementById('statAcc').textContent = '100%';
+  document.getElementById('statDelta').textContent = '—';
+  document.getElementById('statFcs').textContent = 'FCS • 100%';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressPercent').textContent = '0%';
+  document.getElementById('progressLabel').textContent = '0 / ' + targetText.length + ' characters';
+
+  clearAllKeyHighlights();
+  renderText();
+  updateSparkline([0]);
+}
+
+function renderText() {
+  const container = document.getElementById('typingText');
+  container.innerHTML = '';
+
+  for (let i = 0; i < targetText.length; i++) {
+    const span = document.createElement('span');
+    span.className = 'typing-char';
+    span.textContent = targetText[i];
+
+    if (i < currentIndex) {
+      // Already typed
+      span.classList.add(targetText[i] === (sessionHistory[i] || '') ? 'typing-char--correct' : 'typing-char--wrong');
+    } else if (i === currentIndex) {
+      span.classList.add('typing-char--current');
+    } else {
+      span.classList.add('typing-char--pending');
+    }
+
+    container.appendChild(span);
+  }
+
+  // Scroll so that current char is always near the top of the viewport (line 1)
+  const currentEl = container.querySelector('.typing-char--current');
+  if (currentEl) {
+    const lineHeight = parseFloat(getComputedStyle(container).lineHeight);
+    const charTop = currentEl.offsetTop;
+    // Keep current char at start of visible area
+    container.scrollTop = Math.max(0, charTop - lineHeight * 0.5);
+  }
+}
+
+// Track session for character-level accuracy
+let sessionHistory = [];
+
+function handleKeydown(e) {
+  if (isComplete) return;
+  if (e.key === 'Tab') { e.preventDefault(); return; }
+  if (e.key === 'Escape') { resetExercise(); return; }
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'Shift' || e.key === 'CapsLock' || e.key === 'Fn') return;
+
+  // Start timer on first keystroke
+  if (!startTime) {
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 200);
+  }
+
+  const expectedChar = targetText[currentIndex];
+  const typedChar = e.key;
+
+  totalKeystrokes++;
+  if (!sessionHistory) sessionHistory = [];
+
+  if (typedChar === expectedChar) {
+    correctKeystrokes++;
+    correctChars++;
+    sessionHistory[currentIndex] = typedChar;
+    currentIndex++;
+    highlightKey(e.code, 'correct');
+  } else {
+    incorrectChars++;
+    sessionHistory[currentIndex] = typedChar;
+    if (typedChar.length === 1) {
+      // Only advance on printable character errors (not backspace/enter etc)
+      currentIndex++;
+    }
+    highlightKey(e.code, 'wrong');
+  }
+
+  updateStats();
+  renderText();
+
+  // Highlight next expected key
+  if (currentIndex < targetText.length) {
+    highlightNextKey(targetText[currentIndex]);
+  }
+
+  // Check completion
+  if (currentIndex >= targetText.length) {
+    completeExercise();
+  }
+}
+
+function highlightKey(code, type) {
+  const cap = document.querySelector(`.keycap[data-code="${code}"]`);
+  if (!cap) return;
+
+  if (type === 'correct') {
+    cap.classList.add('keycap--pressed');
+    setTimeout(() => cap.classList.remove('keycap--pressed'), 100);
+  } else if (type === 'wrong') {
+    cap.classList.add('keycap--wrong-flash');
+    setTimeout(() => cap.classList.remove('keycap--wrong-flash'), 400);
+  }
+}
+
+function highlightNextKey(char) {
+  // Clear previous active
+  document.querySelectorAll('.keycap--active').forEach(el => el.classList.remove('keycap--active'));
+
+  const lowerChar = char.toLowerCase();
+  const cap = document.querySelector(`.keycap[data-char="${lowerChar}"]`);
+  if (cap) {
+    cap.classList.add('keycap--active');
+
+    // Also highlight finger zone briefly
+    const finger = cap.getAttribute('data-finger');
+    if (finger) {
+      document.querySelectorAll(`.keycap[data-finger="${finger}"]`).forEach(el => {
+        el.style.filter = 'brightness(1.15)';
+        setTimeout(() => { el.style.filter = ''; }, 300);
+      });
+    }
+  }
+}
+
+function clearAllKeyHighlights() {
+  document.querySelectorAll('.keycap--active, .keycap--pressed, .keycap--wrong-flash').forEach(el => {
+    el.classList.remove('keycap--active', 'keycap--pressed', 'keycap--wrong-flash');
+  });
+  document.querySelectorAll('.keycap').forEach(el => el.style.filter = '');
+}
+
+function updateStats() {
+  const elapsed = startTime ? (Date.now() - startTime) / 1000 / 60 : 0;
+
+  // Net WPM: (correct chars / 5) / minutes
+  const netWpm = elapsed > 0 ? Math.round((correctChars / 5) / elapsed) : 0;
+  wpmHistory.push(netWpm);
+
+  const accuracy = totalKeystrokes > 0 ? Math.round((correctChars / Math.max(currentIndex, 1)) * 100) : 100;
+
+  document.getElementById('statWpm').textContent = netWpm;
+  document.getElementById('statAcc').textContent = accuracy + '%';
+  document.getElementById('progressFill').style.width = ((currentIndex / targetText.length) * 100) + '%';
+  document.getElementById('progressPercent').textContent = Math.round((currentIndex / targetText.length) * 100) + '%';
+  document.getElementById('progressLabel').textContent = currentIndex + ' / ' + targetText.length + ' characters';
+
+  // FCS estimation
+  const fcs = totalKeystrokes > 0 ? Math.round((correctKeystrokes / totalKeystrokes) * 100) : 100;
+  document.getElementById('statFcs').textContent = 'FCS • ' + fcs + '%';
+
+  // Update sparkline (last 20 data points)
+  updateSparkline(wpmHistory.slice(-20));
+}
+
+function updateTimer() {
+  if (!startTime) return;
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+  const secs = (elapsed % 60).toString().padStart(2, '0');
+  document.getElementById('statTime').textContent = mins + ':' + secs;
+}
+
+function updateSparkline(data) {
+  const container = document.getElementById('sparkWpm');
+  if (data.length < 2) {
+    container.innerHTML = '<svg viewBox="0 0 100 32"><line x1="0" y1="16" x2="100" y2="16" stroke="#5f5d59" stroke-width="1"/></svg>';
+    return;
+  }
+
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const w = 100;
+  const h = 32;
+  const pad = 4;
+
+  const points = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - 2 * pad);
+    const y = h - pad - ((v - min) / range) * (h - 2 * pad);
+    return x + ',' + y;
+  }).join(' ');
+
+  container.innerHTML = `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <polyline points="${points}" fill="none" stroke="#c9a84c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+    </linearGradient>
+    <polygon points="${points} ${w-pad},${h-pad} ${pad},${h-pad}" fill="url(#sg)"/>
+  </svg>`;
+}
+
+function completeExercise() {
+  isComplete = true;
+  clearInterval(timerInterval);
+  clearAllKeyHighlights();
+
+  const elapsed = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+  const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+  const secs = (elapsed % 60).toString().padStart(2, '0');
+  const netWpm = elapsed > 0 ? Math.round((correctChars / 5) / (elapsed / 60)) : 0;
+  const accuracy = totalKeystrokes > 0 ? Math.round((correctChars / Math.max(currentIndex, 1)) * 100) : 100;
+
+  document.getElementById('finalWpm').textContent = netWpm;
+  document.getElementById('finalAcc').textContent = accuracy + '%';
+  document.getElementById('finalTime').textContent = mins + ':' + secs;
+
+  setTimeout(() => {
+    document.getElementById('completionOverlay').classList.add('completion-overlay--visible');
+  }, 400);
+}
+
+function toggleZones() {
+  const wrapper = document.getElementById('keyboardWrapper');
+  const btn = document.getElementById('zoneToggle');
+  wrapper.classList.toggle('show-zones');
+  btn.classList.toggle('zone-toggle--on');
+  btn.querySelector('span').textContent = wrapper.classList.contains('show-zones') ? 'Finger Zones' : 'Finger Zones';
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+buildKeyboard();
+loadText('homeRow');
+
+// Focus handling — always capture keystrokes
+document.addEventListener('keydown', handleKeydown);
+document.addEventListener('click', () => document.body.focus());
+document.body.focus();
+
+// Mode switchers
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('mode-btn--active'));
+    this.classList.add('mode-btn--active');
+  });
+});
+
+// Nav items
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', function(e) {
+    e.preventDefault();
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('nav-item--active'));
+    this.classList.add('nav-item--active');
+  });
+});
+
+console.log('%c⌨️  KeyTrainer Phase 2 Prototype Ready  %c|  Start typing to begin!',
+  'background:#222427;color:#c9a84c;padding:8px 12px;border-radius:4px 0 0 4px;font-weight:600',
+  'background:#222427;color:#9c9a95;padding:8px 12px;border-radius:0 4px 4px 0');
+</script>
+</body>
+</html>
