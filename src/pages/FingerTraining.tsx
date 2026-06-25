@@ -17,7 +17,7 @@ export default function FingerTraining() {
     setCurrentLevel(level)
     const lesson = lessonLevels.find(l => l.level === level)
     if (lesson) {
-      start(lesson.generate())
+      start(lesson.generate(), 'finger')
     }
   }, [start])
 

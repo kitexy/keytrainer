@@ -1,74 +1,70 @@
 /**
- * HandGuide — 半透明手型指引
+ * HandGuide — 指法指引覆盖层
  *
- * 在 Keyboard SVG 上叠加半透明手型轮廓，
- * 展示左右手在 Home Row 的正确放置位置。
- *
- * 简约线条风格，不干扰键盘阅读。
+ * 在母键（A/S/D/F/J/K/L/;）上叠加半透明色块，
+ * 色块尺寸与键帽完全一致，并在色块中央显示指位名称（左小 / 右中 等）。
  */
 
-interface HandGuideProps {
-  // reserved for future use
+import { KEYBOARD_LAYOUT } from '../../utils/keyboardLayout'
+
+const KW = 58   // 标准键宽
+const KH = 52   // 标准键高
+
+/** 从 KEYBOARD_LAYOUT 查找指定 code 的键位 x/y */
+function getKey(code: string) {
+  return KEYBOARD_LAYOUT.find(k => k.code === code)
 }
 
-export default function HandGuide(_props: HandGuideProps) {
-  // Home Row y 坐标（来自 keyboardLayout ROW_Y[2]）
-  const homeY = 144
-  const fingerW = 36  // 手指宽度
-  const fingerH = 72  // 手指长度（覆盖到上排）
-  const wristW = 90   // 手腕宽度
-  const wristH = 40   // 手腕高度
+// 母键定义：[code, 指位标签, 填充色, 文字色]
+const HOME_KEYS: Array<{ code: string; label: string; fill: string; textFill: string }> = [
+  { code: 'KeyA',      label: '左小',  fill: '#9b8ec4', textFill: '#fff' },
+  { code: 'KeyS',      label: '左无名', fill: '#5f8fc4', textFill: '#fff' },
+  { code: 'KeyD',      label: '左中',  fill: '#3aac8d', textFill: '#fff' },
+  { code: 'KeyF',      label: '左食',  fill: '#7ab648', textFill: '#fff' },
+  { code: 'KeyJ',      label: '右食',  fill: '#d4a843', textFill: '#fff' },
+  { code: 'KeyK',      label: '右中',  fill: '#d4843a', textFill: '#fff' },
+  { code: 'KeyL',      label: '右无名', fill: '#c4556a', textFill: '#fff' },
+  { code: 'Semicolon', label: '右小',  fill: '#b84545', textFill: '#fff' },
+]
 
+export default function HandGuide() {
   return (
-    <g opacity={0.18} pointerEvents="none">
-      {/* ─── 左手 ─────────────────────────────── */}
-      {/* 左手腕 */}
-      <rect
-        x={84} y={homeY + fingerH - 8}
-        width={wristW} height={wristH}
-        rx={10} ry={10}
-        fill="#8888cc"
-      />
-      {/* 左小指 — A */}
-      <rect x={96}  y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#CECBF6" />
-      {/* 左无名指 — S */}
-      <rect x={160} y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#B5D4F4" />
-      {/* 左中指 — D */}
-      <rect x={224} y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#9FE1CB" />
-      {/* 左食指 — F */}
-      <rect x={288} y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#C0DD97" />
+    <g pointerEvents="none">
+      {HOME_KEYS.map(({ code, label, fill, textFill }) => {
+        const key = getKey(code)
+        if (!key) return null
 
-      {/* ─── 右手 ─────────────────────────────── */}
-      {/* 右手腕 */}
-      <rect
-        x={468} y={homeY + fingerH - 8}
-        width={wristW} height={wristH}
-        rx={10} ry={10}
-        fill="#ccaa88"
-      />
-      {/* 右食指 — J */}
-      <rect x={420} y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#FAEEDA" />
-      {/* 右中指 — K */}
-      <rect x={484} y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#FAC775" />
-      {/* 右无名指 — L */}
-      <rect x={548} y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#F4C0D1" />
-      {/* 右小指 — ; */}
-      <rect x={612} y={homeY - fingerH + 16} width={fingerW} height={fingerH+8} rx={8} fill="#F7C1C1" />
+        const x = key.x
+        const y = key.y
+        const cx = x + KW / 2   // 键帽中心 x
+        const cy = y + KH / 2   // 键帽中心 y
 
-      {/* ─── 拇指 — 空格键 ────────────────────── */}
-      <rect
-        x={234} y={268}
-        width={172} height={22}
-        rx={6} fill="#D3D1C7"
-      />
-
-      {/* ─── 标签 ─────────────────────────────── */}
-      <text x={132} y={homeY + fingerH + wristH + 22} textAnchor="middle" fill="#8888cc" fontSize={11} fontFamily="system-ui, sans-serif" fontWeight={500}>
-        左手
-      </text>
-      <text x={510} y={homeY + fingerH + wristH + 22} textAnchor="middle" fill="#ccaa88" fontSize={11} fontFamily="system-ui, sans-serif" fontWeight={500}>
-        右手
-      </text>
+        return (
+          <g key={code}>
+            {/* 色块：完全覆盖键帽，圆角与 KeyCap 一致 */}
+            <rect
+              x={x} y={y}
+              width={KW} height={KH}
+              rx={8} ry={8}
+              fill={fill}
+              opacity={0.55}
+            />
+            {/* 指位标签 */}
+            <text
+              x={cx} y={cy + 4}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill={textFill}
+              fontSize={11}
+              fontWeight={600}
+              fontFamily="PingFang SC, Helvetica Neue, system-ui, sans-serif"
+              opacity={0.95}
+            >
+              {label}
+            </text>
+          </g>
+        )
+      })}
     </g>
   )
 }

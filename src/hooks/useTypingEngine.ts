@@ -54,9 +54,9 @@ export default function useTypingEngine() {
   }, [])
 
   // 开始新练习
-  const start = useCallback((text: string) => {
+  const start = useCallback((text: string, mode = 'free') => {
     resetStore()
-    initSession(text)
+    initSession(text, mode)
     startTimer()
   }, [initSession, resetStore, startTimer])
 

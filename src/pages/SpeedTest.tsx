@@ -67,7 +67,7 @@ export default function SpeedTest() {
     setDuration(d)
     setRemaining(d)
     const text = generateWords(60) // 60个单词，够用到超时
-    start(text)
+    start(text, 'speed')
   }, [start])
 
   const handleRetry = useCallback(() => {

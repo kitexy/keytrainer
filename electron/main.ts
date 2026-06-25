@@ -1,7 +1,17 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import * as path from 'path'
+import {
+  saveSession,
+  getHistory,
+  getStatsSummary,
+  getWeakKeys,
+  getWpmTrend,
+  getLessonRecords,
+  upsertLessonRecord,
+  closeDb,
+} from './ipc/storage'
+import { getSetting, setSetting, getAllSettings } from './ipc/settings'
 
-// 禁用 Electron 默认菜单（我们用自定义 Sidebar）
 let mainWindow: BrowserWindow | null = null
 
 function createWindow() {
@@ -10,18 +20,16 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    titleBarStyle: 'hidden',          // macOS 隐藏标题栏，显示红黄绿按钮
-    vibrancy: 'under-window',        // macOS 毛玻璃效果
+    titleBarStyle: 'hidden',
+    vibrancy: 'under-window',
     visualEffectState: 'active',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // 编译后的 JS
+      preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
     },
   })
 
-  // 开发模式：加载 Vite  Dev Server
-  // 生产模式：加载本地文件
   const isDev = !app.isPackaged && process.env.VITE_DEV_SERVER_URL
 
   if (isDev) {
@@ -31,7 +39,6 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
   }
 
-  // 外部链接用系统浏览器打开
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }
@@ -42,9 +49,11 @@ function createWindow() {
   })
 }
 
-// App 生命周期
+// ─── App 生命周期 ─────────────────────────────────────────────
+
 app.whenReady().then(() => {
   createWindow()
+  registerIpcHandlers()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -54,24 +63,111 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-  // macOS: 关闭所有窗口不退出应用
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
-// ——— IPC 占位（Phase 3 实现） ———
-ipcMain.handle('db:query', async (_event, sql: string, params: any[]) => {
-  // TODO: better-sqlite3 查询
-  return []
+app.on('before-quit', () => {
+  closeDb()
 })
 
-ipcMain.handle('settings:get', async (_event, key: string) => {
-  // TODO: electron-store 读取
-  return null
-})
+// ─── IPC 处理器注册 ───────────────────────────────────────────
 
-ipcMain.handle('settings:set', async (_event, key: string, value: any) => {
-  // TODO: electron-store 写入
-  return true
-})
+function registerIpcHandlers() {
+  // ——— 会话 ———
+
+  ipcMain.handle('db:save-session', async (_event, params) => {
+    try {
+      const id = saveSession(params)
+      return { success: true, id }
+    } catch (err: any) {
+      console.error('db:save-session error:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('db:get-history', async (_event, params) => {
+    try {
+      return { success: true, ...getHistory(params) }
+    } catch (err: any) {
+      console.error('db:get-history error:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('db:get-stats-summary', async () => {
+    try {
+      return { success: true, ...getStatsSummary() }
+    } catch (err: any) {
+      console.error('db:get-stats-summary error:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('db:get-weak-keys', async (_event, limit?: number) => {
+    try {
+      return { success: true, keys: getWeakKeys(limit) }
+    } catch (err: any) {
+      console.error('db:get-weak-keys error:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('db:get-wpm-trend', async (_event, days?: number) => {
+    try {
+      return { success: true, trend: getWpmTrend(days) }
+    } catch (err: any) {
+      console.error('db:get-wpm-trend error:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  // ——— 课程记录 ———
+
+  ipcMain.handle('db:get-lesson-records', async () => {
+    try {
+      return { success: true, records: getLessonRecords() }
+    } catch (err: any) {
+      console.error('db:get-lesson-records error:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('db:upsert-lesson-record', async (_event, params) => {
+    try {
+      upsertLessonRecord(params)
+      return { success: true }
+    } catch (err: any) {
+      console.error('db:upsert-lesson-record error:', err)
+      return { success: false, error: err.message }
+    }
+  })
+
+  // ——— 设置 ———
+
+  ipcMain.handle('settings:get', async (_event, key: string) => {
+    try {
+      return { success: true, value: getSetting(key as any) }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('settings:set', async (_event, key: string, value: any) => {
+    try {
+      setSetting(key as any, value)
+      return { success: true }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('settings:get-all', async () => {
+    try {
+      return { success: true, ...getAllSettings() }
+    } catch (err: any) {
+      return { success: false, error: err.message }
+    }
+  })
+}

@@ -41,12 +41,12 @@ export default function Practice() {
 
   const handleStart = useCallback(() => {
     const text = generateText(selectedMode)
-    start(text)
+    start(text, selectedMode)
   }, [selectedMode, start])
 
   const handleRetry = useCallback(() => {
     const text = generateText(selectedMode)
-    start(text)
+    start(text, selectedMode)
   }, [selectedMode, start])
 
   const isIdle = sessionStatus === 'idle'
