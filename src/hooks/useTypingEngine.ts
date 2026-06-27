@@ -10,6 +10,7 @@
 
 import { useEffect, useRef, useCallback } from 'react'
 import { useTypingStore } from '../stores/typingStore'
+import { useToastStore } from '../stores/toastStore'
 import { playKeyClick, playKeyError, isSoundEnabled } from '../utils/sound'
 
 const IGNORED_KEYS = new Set([
@@ -115,6 +116,28 @@ export default function useTypingEngine() {
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
   }, [handleKeyDown])
+
+  // 输入法检测：compositionstart → IME 被激活
+  useEffect(() => {
+    let lastImeToast = 0
+    const IME_COOLDOWN = 5000 // 5秒冷却，避免连续弹 toast
+
+    const onCompositionStart = () => {
+      const status = useTypingStore.getState().sessionStatus
+      if (status !== 'running') return
+      const now = Date.now()
+      if (now - lastImeToast < IME_COOLDOWN) return
+      lastImeToast = now
+      useToastStore.getState().show(
+        '检测到中文输入法，请切换为 ABC / EN 英文输入',
+        'warning',
+        4000,
+      )
+    }
+
+    window.addEventListener('compositionstart', onCompositionStart)
+    return () => window.removeEventListener('compositionstart', onCompositionStart)
+  }, [])
 
   // 练习结束时停止计时器
   useEffect(() => {

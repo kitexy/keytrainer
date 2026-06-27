@@ -6,6 +6,7 @@ import Lessons from './pages/Lessons'
 import SpeedTest from './pages/SpeedTest'
 import Stats from './pages/Stats'
 import Settings from './pages/Settings'
+import ToastContainer from './components/Toast/ToastContainer'
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
+        <ToastContainer />
       </div>
     </MemoryRouter>
   )

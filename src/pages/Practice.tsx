@@ -4,6 +4,8 @@ import TypingArea from '../components/TypingArea/TypingArea'
 import StatsPanel from '../components/StatsPanel/StatsPanel'
 import Keyboard from '../components/Keyboard/Keyboard'
 import { useTypingStore } from '../stores/typingStore'
+import { useToastStore } from '../stores/toastStore'
+import ImeNotice from '../components/Toast/ImeNotice'
 import {
   generateRandomChars, generateHomeRow, generateTopRow,
   generateBottomRow, generateWords,
@@ -42,6 +44,7 @@ export default function Practice() {
   const handleStart = useCallback(() => {
     const text = generateText(selectedMode)
     start(text, selectedMode)
+    useToastStore.getState().show('⌨️ 请确认已切换到英文输入法', 'info', 2000)
   }, [selectedMode, start])
 
   const handleRetry = useCallback(() => {
@@ -107,6 +110,7 @@ export default function Practice() {
               开始练习
             </button>
           </div>
+          <ImeNotice />
         </div>
       )}
 

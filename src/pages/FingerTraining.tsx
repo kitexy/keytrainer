@@ -4,6 +4,8 @@ import TypingArea from '../components/TypingArea/TypingArea'
 import StatsPanel from '../components/StatsPanel/StatsPanel'
 import Keyboard from '../components/Keyboard/Keyboard'
 import { useTypingStore } from '../stores/typingStore'
+import { useToastStore } from '../stores/toastStore'
+import ImeNotice from '../components/Toast/ImeNotice'
 import { lessonLevels } from '../utils/textGenerator'
 
 export default function FingerTraining() {
@@ -18,6 +20,7 @@ export default function FingerTraining() {
     const lesson = lessonLevels.find(l => l.level === level)
     if (lesson) {
       start(lesson.generate(), 'finger')
+      useToastStore.getState().show('⌨️ 请确认已切换到英文输入法', 'info', 2000)
     }
   }, [start])
 
@@ -43,6 +46,7 @@ export default function FingerTraining() {
       {/* 课程选择（仅 idle 状态） */}
       {isIdle && (
         <div className="w-full max-w-[960px]">
+          <ImeNotice />
           <div className="grid grid-cols-4 gap-3 mb-4">
             {lessonLevels.map(lesson => (
               <button

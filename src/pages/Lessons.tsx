@@ -4,6 +4,8 @@ import TypingArea from '../components/TypingArea/TypingArea'
 import StatsPanel from '../components/StatsPanel/StatsPanel'
 import Keyboard from '../components/Keyboard/Keyboard'
 import { useTypingStore } from '../stores/typingStore'
+import { useToastStore } from '../stores/toastStore'
+import ImeNotice from '../components/Toast/ImeNotice'
 import { lessonLevels } from '../utils/textGenerator'
 import { db } from '../utils/db'
 
@@ -76,7 +78,10 @@ export default function Lessons() {
   const handleStart = useCallback((level: number) => {
     setCurrentLevel(level)
     const lesson = lessonLevels.find(l => l.level === level)
-    if (lesson) start(lesson.generate(), 'lesson')
+    if (lesson) {
+      start(lesson.generate(), 'lesson')
+      useToastStore.getState().show('⌨️ 请确认已切换到英文输入法', 'info', 2000)
+    }
   }, [start])
 
   const handleBack = useCallback(() => {
@@ -113,6 +118,7 @@ export default function Lessons() {
           <p className="text-sm text-gray-500 mt-1">
             13级渐进式指位课程 · 已解锁 {maxCompletedLevel + 1}/13 级 · 已完成 {completedCount} 级
           </p>
+          <ImeNotice />
           <div className="mt-3 h-1.5 bg-gray-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500"

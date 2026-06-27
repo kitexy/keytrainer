@@ -4,6 +4,8 @@ import TypingArea from '../components/TypingArea/TypingArea'
 import StatsPanel from '../components/StatsPanel/StatsPanel'
 import Keyboard from '../components/Keyboard/Keyboard'
 import { useTypingStore } from '../stores/typingStore'
+import { useToastStore } from '../stores/toastStore'
+import ImeNotice from '../components/Toast/ImeNotice'
 import { generateWords } from '../utils/textGenerator'
 
 type Duration = 30 | 60 | 180 | 300
@@ -68,6 +70,7 @@ export default function SpeedTest() {
     setRemaining(d)
     const text = generateWords(60) // 60个单词，够用到超时
     start(text, 'speed')
+    useToastStore.getState().show('⌨️ 请确认已切换到英文输入法', 'info', 2000)
   }, [start])
 
   const handleRetry = useCallback(() => {
@@ -98,6 +101,7 @@ export default function SpeedTest() {
       {/* 时长选择（仅 idle） */}
       {isIdle && (
         <div className="w-full max-w-[960px]">
+          <ImeNotice />
           <div className="grid grid-cols-4 gap-3 mb-6">
             {DURATION_OPTIONS.map(opt => (
               <button
