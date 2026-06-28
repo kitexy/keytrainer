@@ -82,8 +82,8 @@ export default function TypingArea() {
       "
       style={{
         fontFamily: "'SF Mono', 'JetBrains Mono', 'Fira Code', monospace",
-        fontSize: '18px',
-        lineHeight: '1.75',
+        fontSize: 'var(--typing-font-size)',
+        lineHeight: 'var(--typing-line-height)',
       }}
     >
       {displayChars.map((tc, i) => (

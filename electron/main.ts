@@ -170,4 +170,10 @@ function registerIpcHandlers() {
       return { success: false, error: err.message }
     }
   })
+
+  // 同步读取主题（避免启动闪烁）
+  ipcMain.on('settings:get-theme-sync', (event) => {
+    const theme = getSetting('theme') || 'dark'
+    event.returnValue = theme
+  })
 }

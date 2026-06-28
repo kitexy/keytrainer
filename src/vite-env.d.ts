@@ -25,6 +25,7 @@ declare global {
         getAll: () => Promise<any>
       }
       platform: string
+      initialTheme: 'light' | 'dark'
     }
   }
 }

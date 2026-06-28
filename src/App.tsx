@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { MemoryRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Layout/Sidebar'
 import Practice from './pages/Practice'
@@ -7,11 +8,14 @@ import SpeedTest from './pages/SpeedTest'
 import Stats from './pages/Stats'
 import Settings from './pages/Settings'
 import ToastContainer from './components/Toast/ToastContainer'
+import { initTheme } from './stores/themeStore'
 
 export default function App() {
+  useEffect(() => { initTheme() }, [])
+
   return (
     <MemoryRouter>
-      <div className="flex h-screen bg-gray-950 text-gray-100 overflow-hidden">
+      <div className="h-screen bg-gray-950 text-gray-100 overflow-hidden flex">
         <Sidebar />
         <main className="flex-1 overflow-auto">
           <Routes>

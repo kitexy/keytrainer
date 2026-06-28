@@ -1,0 +1,34 @@
+appId: com.keytrainer.app
+productName: KeyTrainer
+copyright: Copyright © 2026
+
+directories:
+  output: release
+  buildResources: resources
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - package.json
+
+mac:
+  category: public.app-category.education
+  icon: resources/icon.icns
+  target:
+    - target: dmg
+      arch:
+        - arm64
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
+
+dmg:
+  title: KeyTrainer-${version}
+  artifactName: KeyTrainer-${version}-mac-arm64.dmg
+
+asar: true
+compression: maximum
+
+npmRebuild: true
+nodeGypRebuild: true

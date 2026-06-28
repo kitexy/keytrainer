@@ -12,8 +12,11 @@ const navItems = [
 export default function Sidebar() {
   return (
     <aside className="w-52 bg-gray-900/80 border-r border-gray-800/60 flex flex-col shrink-0">
+      {/* macOS traffic lights 占位 */}
+      <div className="h-10" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties} />
+
       {/* Logo / 标题 */}
-      <div className="px-5 py-6 flex items-center gap-3">
+      <div className="px-5 py-3 flex items-center gap-3">
         <span className="text-2xl">🎯</span>
         <h1 className="text-lg font-bold tracking-tight text-white">KeyTrainer</h1>
       </div>
@@ -40,7 +43,7 @@ export default function Sidebar() {
 
       {/* 底部版本信息 */}
       <div className="px-5 py-4 text-[11px] text-gray-600 border-t border-gray-800/40">
-        KeyTrainer v0.1.0
+        KeyTrainer v0.3.0
       </div>
     </aside>
   )

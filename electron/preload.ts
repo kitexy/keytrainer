@@ -6,6 +6,9 @@
 
 import { contextBridge, ipcRenderer } from 'electron'
 
+// ─── 同步读取初始主题（避免启动闪烁） ───
+const initialTheme: 'light' | 'dark' = ipcRenderer.sendSync('settings:get-theme-sync')
+
 contextBridge.exposeInMainWorld('api', {
   // ─── 数据库操作 ───
 
@@ -55,4 +58,5 @@ contextBridge.exposeInMainWorld('api', {
   // ─── 平台信息 ───
 
   platform: process.platform,
+  initialTheme,
 })

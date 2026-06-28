@@ -2,7 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 自定义 macOS 风格滚动条 */
+/* ═══════════════════════════════════════════════════════════════
+   主题系统 — CSS 自定义属性
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --typing-font-size: 18px;
+  --typing-line-height: 1.8;
+}
+
+:root[data-font-size="small"]  { --typing-font-size: 15px; --typing-line-height: 1.7; }
+:root[data-font-size="medium"] { --typing-font-size: 18px; --typing-line-height: 1.8; }
+:root[data-font-size="large"]  { --typing-font-size: 22px; --typing-line-height: 1.9; }
+
+/* ─── 滚动条 ─── */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -17,7 +30,15 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* 自定义选中文字颜色 */
+/* 浅色主题滚动条 */
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ─── 选中文字 ─── */
 ::selection {
   background: rgba(59, 130, 246, 0.4);
   color: white;
@@ -76,4 +97,84 @@
 }
 .animate-toast-in {
   animation: toast-in 0.25s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Light 主题覆盖 — 当 <html class="light"> 时生效
+   ═══════════════════════════════════════════════════════════════ */
+
+html.light {
+  /* ── 页面背景 ── */
+  .bg-gray-950 { background-color: #f8f9fa !important; }
+  .bg-gray-900 { background-color: #ffffff !important; }
+  .bg-gray-900\/30 { background-color: rgba(255, 255, 255, 0.7) !important; }
+  .bg-gray-900\/50 { background-color: rgba(255, 255, 255, 0.85) !important; }
+  .bg-gray-800 { background-color: #f1f3f5 !important; }
+  .bg-gray-800\/30 { background-color: rgba(241, 243, 245, 0.7) !important; }
+  .bg-gray-800\/40 { background-color: rgba(241, 243, 245, 0.8) !important; }
+  .bg-gray-800\/50 { background-color: rgba(241, 243, 245, 0.9) !important; }
+  .bg-gray-700 { background-color: #e9ecef !important; }
+  .bg-gray-700\/50 { background-color: rgba(233, 236, 239, 0.9) !important; }
+
+  /* ── 文本颜色 ── */
+  .text-white  { color: #111827 !important; }
+  .text-gray-50 { color: #111827 !important; }
+  .text-gray-100 { color: #1f2937 !important; }
+  .text-gray-200 { color: #374151 !important; }
+  .text-gray-300 { color: #4b5563 !important; }
+  .text-gray-400 { color: #6b7280 !important; }
+  .text-gray-500 { color: #6b7280 !important; }
+  .text-gray-600 { color: #9ca3af !important; }
+
+  /* ── 边框 ── */
+  .border-gray-800      { border-color: #e5e7eb !important; }
+  .border-gray-800\/30  { border-color: rgba(229, 231, 235, 0.7) !important; }
+  .border-gray-800\/40  { border-color: rgba(229, 231, 235, 0.8) !important; }
+  .border-gray-800\/50  { border-color: rgba(229, 231, 235, 0.9) !important; }
+  .border-gray-700      { border-color: #d1d5db !important; }
+  .border-gray-700\/30  { border-color: rgba(209, 213, 219, 0.7) !important; }
+  .border-t-gray-800\/40 { border-top-color: rgba(229, 231, 235, 0.8) !important; }
+  .divide-gray-800 > * + * { border-color: #e5e7eb !important; }
+
+  /* ── 阴影适配 ── */
+  .shadow-lg.shadow-blue-500\/25 { box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.08) !important; }
+  .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06) !important; }
+  .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important; }
+
+  /* ── 特殊组件 ── */
+  .bg-blue-600\/20 { background-color: rgba(59, 130, 246, 0.08) !important; }
+  .text-blue-400 { color: #2563eb !important; }
+  .border-blue-500\/20 { border-color: rgba(59, 130, 246, 0.15) !important; }
+
+  .bg-green-600\/10 { background-color: rgba(16, 185, 129, 0.06) !important; }
+  .text-green-400 { color: #059669 !important; }
+
+  .bg-yellow-600\/10 { background-color: rgba(245, 158, 11, 0.06) !important; }
+  .text-yellow-400 { color: #d97706 !important; }
+
+  .bg-red-600\/10 { background-color: rgba(239, 68, 68, 0.06) !important; }
+  .text-red-400 { color: #dc2626 !important; }
+
+  .bg-purple-600\/10 { background-color: rgba(139, 92, 246, 0.06) !important; }
+  .text-purple-400 { color: #7c3aed !important; }
+
+  .bg-cyan-600\/10 { background-color: rgba(6, 182, 212, 0.06) !important; }
+  .text-cyan-400 { color: #0891b2 !important; }
+
+  .bg-orange-600\/10 { background-color: rgba(249, 115, 22, 0.06) !important; }
+  .text-orange-400 { color: #ea580c !important; }
+
+  /* ── 琥珀色 toast 优化 ── */
+  .text-amber-300 { color: #d97706 !important; }
+
+  /* ── hover 状态适配 ── */
+  .hover\:bg-gray-800:hover { background-color: #e9ecef !important; }
+  .hover\:bg-gray-800\/50:hover { background-color: rgba(233, 236, 239, 0.9) !important; }
+  .hover\:text-gray-200:hover { color: #374151 !important; }
+  .hover\:text-gray-300:hover { color: #4b5563 !important; }
+  .hover\:text-white:hover { color: #111827 !important; }
+  .hover\:bg-blue-500:hover { background-color: #3b82f6 !important; }
+
+  /* ── ring / outline ── */
+  .ring-1.ring-gray-800 { box-shadow: 0 0 0 1px #e5e7eb !important; }
 }
