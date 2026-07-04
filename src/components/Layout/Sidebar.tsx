@@ -11,14 +11,25 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="w-52 bg-gray-900/80 border-r border-gray-800/60 flex flex-col shrink-0">
+    <aside
+      className="w-52 flex flex-col shrink-0"
+      style={{
+        backgroundColor: 'var(--kt-sidebar-bg)',
+        borderRight: '1px solid var(--kt-sidebar-border)',
+      }}
+    >
       {/* macOS traffic lights 占位 */}
       <div className="h-10" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties} />
 
       {/* Logo / 标题 */}
       <div className="px-5 py-3 flex items-center gap-3">
         <span className="text-2xl">🎯</span>
-        <h1 className="text-lg font-bold tracking-tight text-white">KeyTrainer</h1>
+        <h1
+          className="text-lg font-bold tracking-tight"
+          style={{ color: 'var(--kt-sidebar-logo)' }}
+        >
+          KeyTrainer
+        </h1>
       </div>
 
       {/* 导航 */}
@@ -29,9 +40,7 @@ export default function Sidebar() {
             to={item.to}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-blue-600/20 text-blue-400'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+                isActive ? 'sidebar-active' : 'sidebar-item'
               }`
             }
           >
@@ -42,7 +51,10 @@ export default function Sidebar() {
       </nav>
 
       {/* 底部版本信息 */}
-      <div className="px-5 py-4 text-[11px] text-gray-600 border-t border-gray-800/40">
+      <div
+        className="px-5 py-4 text-[11px] border-t border-transparent"
+        style={{ color: 'var(--kt-sidebar-version)' }}
+      >
         KeyTrainer v0.3.0
       </div>
     </aside>

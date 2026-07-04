@@ -9,6 +9,17 @@
 :root {
   --typing-font-size: 18px;
   --typing-line-height: 1.8;
+
+  /* 侧边栏主题变量 */
+  --kt-sidebar-bg: rgba(17, 24, 39, 0.8);
+  --kt-sidebar-border: rgba(31, 41, 55, 0.6);
+  --kt-sidebar-logo: #ffffff;
+  --kt-sidebar-text: #9ca3af;
+  --kt-sidebar-text-hover: #e5e7eb;
+  --kt-sidebar-hover-bg: rgba(31, 41, 55, 0.5);
+  --kt-sidebar-active-bg: rgba(37, 99, 235, 0.2);
+  --kt-sidebar-active-text: #60a5fa;
+  --kt-sidebar-version: #4b5563;
 }
 
 :root[data-font-size="small"]  { --typing-font-size: 15px; --typing-line-height: 1.7; }
@@ -36,6 +47,19 @@ html.light ::-webkit-scrollbar-thumb {
 }
 html.light ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Sidebar 导航项（使用 CSS 变量） ─── */
+.sidebar-item {
+  color: var(--kt-sidebar-text);
+}
+.sidebar-item:hover {
+  color: var(--kt-sidebar-text-hover);
+  background-color: var(--kt-sidebar-hover-bg);
+}
+.sidebar-active {
+  background-color: var(--kt-sidebar-active-bg);
+  color: var(--kt-sidebar-active-text);
 }
 
 /* ─── 选中文字 ─── */
@@ -104,11 +128,23 @@ html.light ::-webkit-scrollbar-thumb:hover {
    ═══════════════════════════════════════════════════════════════ */
 
 html.light {
+  /* ── 侧边栏变量覆盖 ── */
+  --kt-sidebar-bg: rgba(255, 255, 255, 0.95);
+  --kt-sidebar-border: rgba(229, 231, 235, 0.85);
+  --kt-sidebar-logo: #111827;
+  --kt-sidebar-text: #6b7280;
+  --kt-sidebar-text-hover: #374151;
+  --kt-sidebar-hover-bg: rgba(243, 244, 246, 0.9);
+  --kt-sidebar-active-bg: rgba(37, 99, 235, 0.08);
+  --kt-sidebar-active-text: #2563eb;
+  --kt-sidebar-version: #9ca3af;
+
   /* ── 页面背景 ── */
   .bg-gray-950 { background-color: #f8f9fa !important; }
   .bg-gray-900 { background-color: #ffffff !important; }
   .bg-gray-900\/30 { background-color: rgba(255, 255, 255, 0.7) !important; }
   .bg-gray-900\/50 { background-color: rgba(255, 255, 255, 0.85) !important; }
+  .bg-gray-900\/80 { background-color: rgba(255, 255, 255, 0.95) !important; }
   .bg-gray-800 { background-color: #f1f3f5 !important; }
   .bg-gray-800\/30 { background-color: rgba(241, 243, 245, 0.7) !important; }
   .bg-gray-800\/40 { background-color: rgba(241, 243, 245, 0.8) !important; }
@@ -131,6 +167,7 @@ html.light {
   .border-gray-800\/30  { border-color: rgba(229, 231, 235, 0.7) !important; }
   .border-gray-800\/40  { border-color: rgba(229, 231, 235, 0.8) !important; }
   .border-gray-800\/50  { border-color: rgba(229, 231, 235, 0.9) !important; }
+  .border-gray-800\/60  { border-color: rgba(229, 231, 235, 0.95) !important; }
   .border-gray-700      { border-color: #d1d5db !important; }
   .border-gray-700\/30  { border-color: rgba(209, 213, 219, 0.7) !important; }
   .border-t-gray-800\/40 { border-top-color: rgba(229, 231, 235, 0.8) !important; }

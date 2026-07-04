@@ -30,6 +30,7 @@ npm-debug.log*
 
 # Electron
 electron-builder-dist/
+release/
 
 # TypeScript
 *.tsbuildinfo

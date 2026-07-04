@@ -12,7 +12,8 @@
     "build:renderer": "vite build",
     "build:electron": "tsc -p tsconfig.node.json",
     "preview": "vite preview",
-    "dist": "npm run build && electron-builder",
+    "rebuild": "electron-rebuild -f -o better-sqlite3",
+    "dist": "npm run build && npm run rebuild && electron-builder",
     "lint": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit"
   },
   "dependencies": {
@@ -25,6 +26,7 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.0.6",
     "@types/better-sqlite3": "^7.6.12",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

@@ -30,5 +30,7 @@ dmg:
 asar: true
 compression: maximum
 
-npmRebuild: true
-nodeGypRebuild: true
+npmRebuild: false
+nodeGypRebuild: false
+
+# Native module is prebuilt via @electron/rebuild before packaging
