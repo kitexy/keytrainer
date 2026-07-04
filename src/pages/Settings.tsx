@@ -38,14 +38,15 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
       aria-checked={on}
       onClick={onToggle}
       className={`
-        relative w-12 h-6 rounded-full transition-colors duration-200
+        relative w-12 h-6 rounded-full p-0.5 transition-colors duration-200
         ${on ? 'bg-blue-600' : 'bg-gray-700'}
       `}
     >
       <span
         className={`
-          absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200
-          ${on ? 'translate-x-7' : 'translate-x-1'}
+          absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow
+          transition-transform duration-200 ease-out
+          ${on ? 'translate-x-6' : 'translate-x-0'}
         `}
       />
     </button>
