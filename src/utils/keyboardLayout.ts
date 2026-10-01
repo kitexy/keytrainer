@@ -24,9 +24,10 @@ export interface KeyLayout {
 
 // ─── 基础常量 ────────────────────────────────────────────────
 
-const KW = 58   // 标准键宽度
-const GAP = 6   // 键间距
-const START_X = 24  // 第一行起始 x
+const KW = 58      // 标准键宽度
+const KH = 52      // 标准键高度
+const GAP = 6      // 键间距
+const START_X = 24 // 第一行起始 x
 
 // 每行 y 坐标
 const ROW_Y = [20, 82, 144, 206, 268]
