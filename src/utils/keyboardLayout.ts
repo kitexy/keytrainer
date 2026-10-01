@@ -114,7 +114,11 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'Space',     label: '',     x: xPos(4)  + (KW+GAP)*0.25, y: ROW_Y[4], w: 5.0, h: 1, finger: 'thumb' },
   { code: 'MetaRight', label: '⌘',   x: xPos(9)  + (KW+GAP)*0.25, y: ROW_Y[4], w: 1.25, h: 1, finger: 'thumb', isModifier: true },
   { code: 'AltRight',  label: '⌥',   x: xPos(10) + (KW+GAP)*0.5,  y: ROW_Y[4], w: 1,   h: 1, finger: 'R-pinky', isModifier: true },
-  { code: 'ArrowKeys', label: '◀▼▲▶', x: xPos(11) + (KW+GAP)*0.5,  y: ROW_Y[4], w: 2.0, h: 1, finger: 'R-pinky', isModifier: true },
+  // 方向键组：仿真实 MacBook — 左 / 上下叠放 / 右，各半宽
+  { code: 'ArrowLeft',  label: '◀', x: xPos(11) + (KW+GAP)*0.5,               y: ROW_Y[4], w: 0.5, h: 1,   finger: 'R-pinky', isModifier: true },
+  { code: 'ArrowUp',    label: '▲', x: xPos(11) + (KW+GAP)*1.0,               y: ROW_Y[4], w: 0.5, h: 0.5, finger: 'R-pinky', isModifier: true },
+  { code: 'ArrowDown',  label: '▼', x: xPos(11) + (KW+GAP)*1.0,               y: ROW_Y[4] + KH*0.5, w: 0.5, h: 0.5, finger: 'R-pinky', isModifier: true },
+  { code: 'ArrowRight', label: '▶', x: xPos(11) + (KW+GAP)*1.5,               y: ROW_Y[4], w: 0.5, h: 1,   finger: 'R-pinky', isModifier: true },
 ]
 
 // ─── 工具函数 ────────────────────────────────────────────────

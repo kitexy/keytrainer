@@ -89,14 +89,14 @@ export default function KeyCap({
         `}
       />
 
-      {/* 主标签 */}
+      {/* 主标签（小键自适应缩小字号） */}
       <text
         x={x + keyW / 2}
         y={y + keyH / 2}
         textAnchor="middle"
         dominantBaseline="central"
         fill={colors.text}
-        fontSize={16}
+        fontSize={keyH < KH ? 10 : keyW < KW ? 11 : 16}
         fontFamily="'SF Mono', 'JetBrains Mono', 'Fira Code', monospace"
         fontWeight={500}
         className="pointer-events-none select-none"
