@@ -37,7 +37,7 @@ export default function HandGuide() {
         const x = key.x
         const y = key.y
         const cx = x + KW / 2   // 键帽中心 x
-        const cy = y + KH / 2   // 键帽中心 y
+        const labelY = y + KH - 11  // 键帽下部，位于字母正下方
 
         return (
           <g key={code}>
@@ -49,13 +49,13 @@ export default function HandGuide() {
               fill={fill}
               opacity={0.55}
             />
-            {/* 指位标签 */}
+            {/* 指位标签：字母正下方 */}
             <text
-              x={cx} y={cy + 4}
+              x={cx} y={labelY}
               textAnchor="middle"
               dominantBaseline="middle"
               fill={textFill}
-              fontSize={11}
+              fontSize={9}
               fontWeight={600}
               fontFamily="PingFang SC, Helvetica Neue, system-ui, sans-serif"
               opacity={0.95}
