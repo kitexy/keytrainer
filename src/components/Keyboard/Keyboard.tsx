@@ -46,14 +46,14 @@ export default function Keyboard({ showFingerZones = false, showHandGuide = fals
   return (
     <div className={`w-full flex justify-center ${className}`}>
       <svg
-        viewBox="0 0 960 340"
-        className="w-full max-w-[960px]"
+        viewBox="0 0 970 340"
+        className="w-full max-w-[970px]"
         style={{ height: 'auto' }}
       >
         {/* 键盘背景 */}
         <rect
           x={0} y={0}
-          width={960} height={340}
+          width={970} height={340}
           rx={16}
           fill="#181825"
           stroke="#2a2a3c"
@@ -88,7 +88,7 @@ export default function Keyboard({ showFingerZones = false, showHandGuide = fals
 
         {/* 底部指示文字 */}
         <text
-          x={480} y={325}
+          x={485} y={325}
           textAnchor="middle"
           fill="#585b70"
           fontSize={10}
