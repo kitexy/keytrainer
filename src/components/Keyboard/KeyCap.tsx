@@ -25,8 +25,8 @@ export interface KeyData {
   h: number
   finger: Finger
   /** 主图标/文字位置 */
-  labelAlign?: 'center' | 'bottom-left'
-  /** 左下角小字英文名称 */
+  labelAlign?: 'center' | 'bottom-left' | 'bottom-right' | 'stack'
+  /** 修饰键小字英文名称（stack 时置于符号下方；bottom-* 时置于符号旁） */
   word?: string
   /** 覆盖默认标签字号 */
   labelSize?: number
@@ -78,7 +78,8 @@ export default function KeyCap({
   const keyW = w * KW
   const keyH = h * KH
 
-  const isBottomLeft = keyData.labelAlign === 'bottom-left'
+  const align = keyData.labelAlign
+  const isSide = align === 'bottom-left' || align === 'bottom-right'
   // 主标签字号：小键自适应
   const baseFontSize = keyData.labelSize ?? (keyH < KH ? 10 : keyW < KW ? 11 : 16)
 
@@ -159,13 +160,13 @@ export default function KeyCap({
             {l.t}
           </text>
         ))
-      ) : isBottomLeft ? (
-        // 修饰键：符号置于左下角（仿 MacBook M5 — Tab/Shift/Delete/Return 仅符号无文字）
+      ) : align === 'stack' ? (
+        // 修饰键：符号在上、小字名称在下（control / option / command）
         <>
           <text
-            x={x + 11}
-            y={y + keyH - 12}
-            textAnchor="start"
+            x={x + keyW / 2}
+            y={y + keyH * 0.36}
+            textAnchor="middle"
             dominantBaseline="central"
             fill={colors.text}
             fontSize={keyData.labelSize ?? 13}
@@ -177,9 +178,45 @@ export default function KeyCap({
           </text>
           {keyData.word && (
             <text
-              x={x + 11 + (label ? 19 : 0)}
+              x={x + keyW / 2}
+              y={y + keyH * 0.72}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill={colors.text}
+              fontSize={8}
+              fontFamily={SANS}
+              opacity={0.6}
+              className="pointer-events-none select-none"
+            >
+              {keyData.word}
+            </text>
+          )}
+        </>
+      ) : isSide ? (
+        // 修饰键：符号贴左下 / 右下角（Tab/左Shift 左对齐，Delete/Return/右Shift 右对齐）
+        <>
+          <text
+            x={align === 'bottom-right' ? x + keyW - 11 : x + 11}
+            y={y + keyH - 12}
+            textAnchor={align === 'bottom-right' ? 'end' : 'start'}
+            dominantBaseline="central"
+            fill={colors.text}
+            fontSize={keyData.labelSize ?? 13}
+            fontFamily={MONO}
+            fontWeight={500}
+            className="pointer-events-none select-none"
+          >
+            {label}
+          </text>
+          {keyData.word && (
+            <text
+              x={
+                align === 'bottom-right'
+                  ? x + keyW - 11 - (label ? 19 : 0)
+                  : x + 11 + (label ? 19 : 0)
+              }
               y={y + keyH - 12}
-              textAnchor="start"
+              textAnchor={align === 'bottom-right' ? 'end' : 'start'}
               dominantBaseline="central"
               fill={colors.text}
               fontSize={7.5}
