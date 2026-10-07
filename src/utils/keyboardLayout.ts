@@ -10,6 +10,16 @@ import type { Finger } from '../types'
 
 // ─── 键帽定义 ────────────────────────────────────────────────
 
+/** 键帽内的一个符号（用于多符号键，如中文键盘的 ￥/$、全角标点） */
+export interface KeyLabelSpec {
+  t: string        // 文本
+  ax: number       // 横向位置（键帽内归一化 0..1）
+  ay: number       // 纵向位置（键帽内归一化 0..1）
+  size?: number    // 字号（默认 10）
+  dim?: boolean    // 次要符号（半透明）
+  cjk?: boolean    // 使用中文无衬线字体
+}
+
 export interface KeyLayout {
   code: string          // keyboard event code
   label: string         // 显示文本（小写）
@@ -26,6 +36,8 @@ export interface KeyLayout {
   word?: string
   /** 覆盖默认标签字号 */
   labelSize?: number
+  /** 多符号键：完全接管标签渲染（仿 MacBook 中文键盘的多符号键帽） */
+  labels?: KeyLabelSpec[]
 }
 
 // ─── 基础常量 ────────────────────────────────────────────────
@@ -57,9 +69,11 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'Digit1',    label: '1', shiftLabel: '!', x: xPos(1),     y: ROW_Y[0], w: 1, h: 1, finger: 'L-pinky' },
   { code: 'Digit2',    label: '2', shiftLabel: '@', x: xPos(2),     y: ROW_Y[0], w: 1, h: 1, finger: 'L-ring' },
   { code: 'Digit3',    label: '3', shiftLabel: '#', x: xPos(3),     y: ROW_Y[0], w: 1, h: 1, finger: 'L-middle' },
-  { code: 'Digit4',    label: '4', shiftLabel: '$', x: xPos(4),     y: ROW_Y[0], w: 1, h: 1, finger: 'L-index' },
+  { code: 'Digit4',    label: '4', shiftLabel: '$', x: xPos(4),     y: ROW_Y[0], w: 1, h: 1, finger: 'L-index',
+    labels: [ { t: '¥', ax: 0.30, ay: 0.25, size: 9, dim: true, cjk: true }, { t: '$', ax: 0.70, ay: 0.25, size: 9, dim: true }, { t: '4', ax: 0.5, ay: 0.58, size: 16 } ] },
   { code: 'Digit5',    label: '5', shiftLabel: '%', x: xPos(5),     y: ROW_Y[0], w: 1, h: 1, finger: 'L-index' },
-  { code: 'Digit6',    label: '6', shiftLabel: '^', x: xPos(6),     y: ROW_Y[0], w: 1, h: 1, finger: 'R-index' },
+  { code: 'Digit6',    label: '6', shiftLabel: '^', x: xPos(6),     y: ROW_Y[0], w: 1, h: 1, finger: 'R-index',
+    labels: [ { t: '…', ax: 0.30, ay: 0.25, size: 9, dim: true }, { t: '^', ax: 0.70, ay: 0.25, size: 9, dim: true }, { t: '6', ax: 0.5, ay: 0.58, size: 16 } ] },
   { code: 'Digit7',    label: '7', shiftLabel: '&', x: xPos(7),     y: ROW_Y[0], w: 1, h: 1, finger: 'R-index' },
   { code: 'Digit8',    label: '8', shiftLabel: '*', x: xPos(8),     y: ROW_Y[0], w: 1, h: 1, finger: 'R-middle' },
   { code: 'Digit9',    label: '9', shiftLabel: '(', x: xPos(9),     y: ROW_Y[0], w: 1, h: 1, finger: 'R-ring' },
@@ -80,9 +94,12 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'KeyI',      label: 'I',   x: xPos(8)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-middle' },
   { code: 'KeyO',      label: 'O',   x: xPos(9)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-ring' },
   { code: 'KeyP',      label: 'P',   x: xPos(10) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'BracketLeft',  label: '[',  shiftLabel: '{', x: xPos(11) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'BracketRight', label: ']',  shiftLabel: '}', x: xPos(12) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'Backslash', label: '\\', shiftLabel: '|', x: xPos(13) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky' },
+  { code: 'BracketLeft',  label: '[',  shiftLabel: '{', x: xPos(11) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky',
+    labels: [ { t: '[', ax: 0.30, ay: 0.28, size: 12 }, { t: '{', ax: 0.70, ay: 0.28, size: 12 }, { t: '【', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '｛', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
+  { code: 'BracketRight', label: ']',  shiftLabel: '}', x: xPos(12) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky',
+    labels: [ { t: ']', ax: 0.30, ay: 0.28, size: 12 }, { t: '}', ax: 0.70, ay: 0.28, size: 12 }, { t: '】', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '｝', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
+  { code: 'Backslash', label: '\\', shiftLabel: '|', x: xPos(13) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky',
+    labels: [ { t: '\\', ax: 0.30, ay: 0.28, size: 12 }, { t: '|', ax: 0.70, ay: 0.28, size: 12 }, { t: '、', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true } ] },
 
   // ────── 基准行 (y=144) ────────────────────────────────────
   { code: 'CapsLock',  label: '中/英', x: xPos(0),   y: ROW_Y[2], w: 1.75, h: 1, finger: 'L-pinky',  isModifier: true, labelSize: 13 },
@@ -95,8 +112,10 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'KeyJ',      label: 'J',   x: xPos(7)  + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-index' },
   { code: 'KeyK',      label: 'K',   x: xPos(8)  + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-middle' },
   { code: 'KeyL',      label: 'L',   x: xPos(9)  + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-ring' },
-  { code: 'Semicolon', label: ';',   shiftLabel: ':', x: xPos(10) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'Quote',     label: "'",   shiftLabel: '"', x: xPos(11) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-pinky' },
+  { code: 'Semicolon', label: ';',   shiftLabel: ':', x: xPos(10) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-pinky',
+    labels: [ { t: ';', ax: 0.30, ay: 0.28, size: 13 }, { t: ':', ax: 0.70, ay: 0.28, size: 13 }, { t: '；', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '：', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
+  { code: 'Quote',     label: "'",   shiftLabel: '"', x: xPos(11) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-pinky',
+    labels: [ { t: "'", ax: 0.30, ay: 0.28, size: 13 }, { t: '"', ax: 0.70, ay: 0.28, size: 13 }, { t: '’', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '”', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
   { code: 'Enter',     label: '⏎',  x: xPos(12) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1.83, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'return' },
 
   // ────── 下排 (y=206) ──────────────────────────────────────
@@ -108,9 +127,12 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'KeyB',       label: 'B',   x: xPos(5) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'L-index' },
   { code: 'KeyN',       label: 'N',   x: xPos(6) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-index' },
   { code: 'KeyM',       label: 'M',   x: xPos(7) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-index' },
-  { code: 'Comma',      label: ',',   shiftLabel: '<', x: xPos(8)  + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-middle' },
-  { code: 'Period',     label: '.',   shiftLabel: '>', x: xPos(9)  + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-ring' },
-  { code: 'Slash',      label: '/',   shiftLabel: '?', x: xPos(10) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-pinky' },
+  { code: 'Comma',      label: ',',   shiftLabel: '<', x: xPos(8)  + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-middle',
+    labels: [ { t: ',', ax: 0.30, ay: 0.28, size: 13 }, { t: '<', ax: 0.70, ay: 0.28, size: 12 }, { t: '，', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '《', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
+  { code: 'Period',     label: '.',   shiftLabel: '>', x: xPos(9)  + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-ring',
+    labels: [ { t: '.', ax: 0.30, ay: 0.28, size: 13 }, { t: '>', ax: 0.70, ay: 0.28, size: 12 }, { t: '。', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '》', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
+  { code: 'Slash',      label: '/',   shiftLabel: '?', x: xPos(10) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-pinky',
+    labels: [ { t: '/', ax: 0.30, ay: 0.28, size: 13 }, { t: '?', ax: 0.70, ay: 0.28, size: 12 }, { t: '、', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '？', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
   { code: 'ShiftRight', label: '⇧',  x: xPos(11) + (KW+GAP)*1.25, y: ROW_Y[3], w: 2.38, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'shift' },
 
   // ────── 修饰行 (y=268) ────────────────────────────────────

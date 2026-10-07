@@ -11,6 +11,7 @@
  */
 
 import type { Finger } from '../../types'
+import type { KeyLabelSpec } from '../../utils/keyboardLayout'
 
 export type KeyCapStatus = 'default' | 'current' | 'correct' | 'incorrect' | 'pending'
 
@@ -29,6 +30,8 @@ export interface KeyData {
   word?: string
   /** 覆盖默认标签字号 */
   labelSize?: number
+  /** 多符号键：完全接管标签渲染 */
+  labels?: KeyLabelSpec[]
 }
 
 interface KeyCapProps {
@@ -113,7 +116,26 @@ export default function KeyCap({
       />
 
       {/* ── 标签渲染 ─────────────────────────────── */}
-      {isBottomLeft ? (
+      {keyData.labels ? (
+        // 多符号键（仿 MacBook 中文键盘）：按归一化坐标逐个渲染
+        keyData.labels.map((l, i) => (
+          <text
+            key={i}
+            x={x + l.ax * keyW}
+            y={y + l.ay * keyH}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill={colors.text}
+            fontSize={l.size ?? 10}
+            opacity={l.dim ? 0.62 : 1}
+            fontFamily={l.cjk ? SANS : MONO}
+            fontWeight={l.dim ? 400 : 500}
+            className="pointer-events-none select-none"
+          >
+            {l.t}
+          </text>
+        ))
+      ) : isBottomLeft ? (
         // 修饰键：符号 + 小字名称，置于左下角（仿 MacBook）
         <>
           <text
