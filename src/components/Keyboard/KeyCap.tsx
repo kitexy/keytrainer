@@ -116,7 +116,31 @@ export default function KeyCap({
       />
 
       {/* ── 标签渲染 ─────────────────────────────── */}
-      {keyData.labels ? (
+      {code === 'CapsLock' ? (
+        // Caps Lock（中/英）：指示灯在上、文字在下，均左对齐
+        <>
+          <circle
+            cx={x + 12}
+            cy={y + 15}
+            r={3}
+            fill={capsOn ? '#a6e3a1' : '#45475a'}
+            className={capsOn ? 'animate-key-pulse' : ''}
+          />
+          <text
+            x={x + 9}
+            y={y + keyH - 12}
+            textAnchor="start"
+            dominantBaseline="central"
+            fill={colors.text}
+            fontSize={keyData.labelSize ?? 13}
+            fontFamily={SANS}
+            fontWeight={500}
+            className="pointer-events-none select-none"
+          >
+            {label}
+          </text>
+        </>
+      ) : keyData.labels ? (
         // 多符号键（仿 MacBook 中文键盘）：按归一化坐标逐个渲染
         keyData.labels.map((l, i) => (
           <text
@@ -136,15 +160,15 @@ export default function KeyCap({
           </text>
         ))
       ) : isBottomLeft ? (
-        // 修饰键：符号 + 小字名称，置于左下角（仿 MacBook）
+        // 修饰键：符号置于左下角（仿 MacBook M5 — Tab/Shift/Delete/Return 仅符号无文字）
         <>
           <text
-            x={x + 10}
-            y={y + keyH - 10}
+            x={x + 11}
+            y={y + keyH - 12}
             textAnchor="start"
             dominantBaseline="central"
             fill={colors.text}
-            fontSize={13}
+            fontSize={keyData.labelSize ?? 13}
             fontFamily={MONO}
             fontWeight={500}
             className="pointer-events-none select-none"
@@ -153,8 +177,8 @@ export default function KeyCap({
           </text>
           {keyData.word && (
             <text
-              x={x + 10 + (label ? 17 : 0)}
-              y={y + keyH - 10}
+              x={x + 11 + (label ? 19 : 0)}
+              y={y + keyH - 12}
               textAnchor="start"
               dominantBaseline="central"
               fill={colors.text}
@@ -212,17 +236,6 @@ export default function KeyCap({
         >
           {label}
         </text>
-      )}
-
-      {/* Caps Lock 大小写指示灯（左上角小圆点，点亮=大写开启） */}
-      {code === 'CapsLock' && (
-        <circle
-          cx={x + 12}
-          cy={y + 12}
-          r={3}
-          fill={capsOn ? '#a6e3a1' : '#45475a'}
-          className={capsOn ? 'animate-key-pulse' : ''}
-        />
       )}
     </g>
   )

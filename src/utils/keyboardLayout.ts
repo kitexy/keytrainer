@@ -80,10 +80,10 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'Digit0',    label: '0', shiftLabel: ')', x: xPos(10),    y: ROW_Y[0], w: 1, h: 1, finger: 'R-pinky' },
   { code: 'Minus',     label: '-', shiftLabel: '_', x: xPos(11),    y: ROW_Y[0], w: 1, h: 1, finger: 'R-pinky' },
   { code: 'Equal',     label: '=', shiftLabel: '+', x: xPos(12),    y: ROW_Y[0], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'Backspace', label: '⌫',  x: xPos(13), y: ROW_Y[0], w: 1.55, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'delete' },
+  { code: 'Backspace', label: '⌫',  x: xPos(13), y: ROW_Y[0], w: 1.55, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', labelSize: 16 },
 
   // ────── 上排 (y=82) ───────────────────────────────────────
-  { code: 'Tab',       label: '⇥',  x: xPos(0),   y: ROW_Y[1], w: 1.5, h: 1, finger: 'L-pinky',  isModifier: true, labelAlign: 'bottom-left', word: 'tab' },
+  { code: 'Tab',       label: '⇥',  x: xPos(0),   y: ROW_Y[1], w: 1.5, h: 1, finger: 'L-pinky',  isModifier: true, labelAlign: 'bottom-left', labelSize: 17 },
   { code: 'KeyQ',      label: 'Q',   x: xPos(1)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'L-pinky' },
   { code: 'KeyW',      label: 'W',   x: xPos(2)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'L-ring' },
   { code: 'KeyE',      label: 'E',   x: xPos(3)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'L-middle' },
@@ -116,10 +116,10 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
     labels: [ { t: ';', ax: 0.30, ay: 0.28, size: 13 }, { t: ':', ax: 0.70, ay: 0.28, size: 13 }, { t: '；', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '：', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
   { code: 'Quote',     label: "'",   shiftLabel: '"', x: xPos(11) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-pinky',
     labels: [ { t: "'", ax: 0.30, ay: 0.28, size: 13 }, { t: '"', ax: 0.70, ay: 0.28, size: 13 }, { t: '’', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '”', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
-  { code: 'Enter',     label: '⏎',  x: xPos(12) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1.83, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'return' },
+  { code: 'Enter',     label: '↵',  x: xPos(12) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1.83, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', labelSize: 17 },
 
   // ────── 下排 (y=206) ──────────────────────────────────────
-  { code: 'ShiftLeft',  label: '⇧',  x: xPos(0),    y: ROW_Y[3], w: 2.25, h: 1, finger: 'L-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'shift' },
+  { code: 'ShiftLeft',  label: '⇧',  x: xPos(0),    y: ROW_Y[3], w: 2.25, h: 1, finger: 'L-pinky', isModifier: true, labelAlign: 'bottom-left', labelSize: 17 },
   { code: 'KeyZ',       label: 'Z',   x: xPos(1) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'L-pinky' },
   { code: 'KeyX',       label: 'X',   x: xPos(2) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'L-ring' },
   { code: 'KeyC',       label: 'C',   x: xPos(3) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'L-middle' },
@@ -133,7 +133,7 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
     labels: [ { t: '.', ax: 0.30, ay: 0.28, size: 13 }, { t: '>', ax: 0.70, ay: 0.28, size: 12 }, { t: '。', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '》', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
   { code: 'Slash',      label: '/',   shiftLabel: '?', x: xPos(10) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-pinky',
     labels: [ { t: '/', ax: 0.30, ay: 0.28, size: 13 }, { t: '?', ax: 0.70, ay: 0.28, size: 12 }, { t: '、', ax: 0.30, ay: 0.74, size: 11, dim: true, cjk: true }, { t: '？', ax: 0.70, ay: 0.74, size: 11, dim: true, cjk: true } ] },
-  { code: 'ShiftRight', label: '⇧',  x: xPos(11) + (KW+GAP)*1.25, y: ROW_Y[3], w: 2.38, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'shift' },
+  { code: 'ShiftRight', label: '⇧',  x: xPos(11) + (KW+GAP)*1.25, y: ROW_Y[3], w: 2.38, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', labelSize: 17 },
 
   // ────── 修饰行 (y=268) ────────────────────────────────────
   { code: 'Fn',        label: 'fn',   x: xPos(0),   y: ROW_Y[4], w: 1,    h: 1, finger: 'thumb', isModifier: true, labelAlign: 'bottom-left' },
