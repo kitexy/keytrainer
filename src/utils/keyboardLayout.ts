@@ -20,6 +20,12 @@ export interface KeyLayout {
   h: number             // 高度（标准=1）
   finger: Finger        // 正确指法
   isModifier?: boolean  // 是否为修饰键
+  /** 主图标/文字在键帽中的位置（默认居中） */
+  labelAlign?: 'center' | 'bottom-left'
+  /** 键帽左下角的小字英文名称（仿 MacBook：tab / shift / delete / return …） */
+  word?: string
+  /** 覆盖默认标签字号 */
+  labelSize?: number
 }
 
 // ─── 基础常量 ────────────────────────────────────────────────
@@ -60,10 +66,10 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'Digit0',    label: '0', shiftLabel: ')', x: xPos(10),    y: ROW_Y[0], w: 1, h: 1, finger: 'R-pinky' },
   { code: 'Minus',     label: '-', shiftLabel: '_', x: xPos(11),    y: ROW_Y[0], w: 1, h: 1, finger: 'R-pinky' },
   { code: 'Equal',     label: '=', shiftLabel: '+', x: xPos(12),    y: ROW_Y[0], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'Backspace', label: '⌫',  x: xPos(13), y: ROW_Y[0], w: 1.55, h: 1, finger: 'R-pinky', isModifier: true },
+  { code: 'Backspace', label: '⌫',  x: xPos(13), y: ROW_Y[0], w: 1.55, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'delete' },
 
   // ────── 上排 (y=82) ───────────────────────────────────────
-  { code: 'Tab',       label: '⇥',  x: xPos(0),   y: ROW_Y[1], w: 1.5, h: 1, finger: 'L-pinky',  isModifier: true },
+  { code: 'Tab',       label: '⇥',  x: xPos(0),   y: ROW_Y[1], w: 1.5, h: 1, finger: 'L-pinky',  isModifier: true, labelAlign: 'bottom-left', word: 'tab' },
   { code: 'KeyQ',      label: 'Q',   x: xPos(1)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'L-pinky' },
   { code: 'KeyW',      label: 'W',   x: xPos(2)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'L-ring' },
   { code: 'KeyE',      label: 'E',   x: xPos(3)  + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'L-middle' },
@@ -79,7 +85,7 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'Backslash', label: '\\', shiftLabel: '|', x: xPos(13) + (KW+GAP)*0.5, y: ROW_Y[1], w: 1, h: 1, finger: 'R-pinky' },
 
   // ────── 基准行 (y=144) ────────────────────────────────────
-  { code: 'CapsLock',  label: '⇪',  x: xPos(0),   y: ROW_Y[2], w: 1.75, h: 1, finger: 'L-pinky',  isModifier: true },
+  { code: 'CapsLock',  label: '中/英', x: xPos(0),   y: ROW_Y[2], w: 1.75, h: 1, finger: 'L-pinky',  isModifier: true, labelSize: 13 },
   { code: 'KeyA',      label: 'A',   x: xPos(1)  + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'L-pinky' },
   { code: 'KeyS',      label: 'S',   x: xPos(2)  + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'L-ring' },
   { code: 'KeyD',      label: 'D',   x: xPos(3)  + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'L-middle' },
@@ -91,10 +97,10 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'KeyL',      label: 'L',   x: xPos(9)  + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-ring' },
   { code: 'Semicolon', label: ';',   shiftLabel: ':', x: xPos(10) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-pinky' },
   { code: 'Quote',     label: "'",   shiftLabel: '"', x: xPos(11) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'Enter',     label: '⏎',  x: xPos(12) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1.83, h: 1, finger: 'R-pinky', isModifier: true },
+  { code: 'Enter',     label: '⏎',  x: xPos(12) + (KW+GAP)*0.75, y: ROW_Y[2], w: 1.83, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'return' },
 
   // ────── 下排 (y=206) ──────────────────────────────────────
-  { code: 'ShiftLeft',  label: '⇧',  x: xPos(0),    y: ROW_Y[3], w: 2.25, h: 1, finger: 'L-pinky', isModifier: true },
+  { code: 'ShiftLeft',  label: '⇧',  x: xPos(0),    y: ROW_Y[3], w: 2.25, h: 1, finger: 'L-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'shift' },
   { code: 'KeyZ',       label: 'Z',   x: xPos(1) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'L-pinky' },
   { code: 'KeyX',       label: 'X',   x: xPos(2) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'L-ring' },
   { code: 'KeyC',       label: 'C',   x: xPos(3) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'L-middle' },
@@ -105,17 +111,17 @@ export const KEYBOARD_LAYOUT: KeyLayout[] = [
   { code: 'Comma',      label: ',',   shiftLabel: '<', x: xPos(8)  + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-middle' },
   { code: 'Period',     label: '.',   shiftLabel: '>', x: xPos(9)  + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-ring' },
   { code: 'Slash',      label: '/',   shiftLabel: '?', x: xPos(10) + (KW+GAP)*1.25, y: ROW_Y[3], w: 1, h: 1, finger: 'R-pinky' },
-  { code: 'ShiftRight', label: '⇧',  x: xPos(11) + (KW+GAP)*1.25, y: ROW_Y[3], w: 2.38, h: 1, finger: 'R-pinky', isModifier: true },
+  { code: 'ShiftRight', label: '⇧',  x: xPos(11) + (KW+GAP)*1.25, y: ROW_Y[3], w: 2.38, h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'shift' },
 
   // ────── 修饰行 (y=268) ────────────────────────────────────
-  { code: 'Fn',        label: 'fn',   x: xPos(0),   y: ROW_Y[4], w: 1,    h: 1, finger: 'thumb', isModifier: true },
-  { code: 'ControlLeft', label: '⌃',  x: xPos(1),   y: ROW_Y[4], w: 1,    h: 1, finger: 'L-pinky', isModifier: true },
-  { code: 'AltLeft',   label: '⌥',   x: xPos(2),   y: ROW_Y[4], w: 1,    h: 1, finger: 'L-pinky', isModifier: true },
-  { code: 'MetaLeft',  label: '⌘',   x: xPos(3),   y: ROW_Y[4], w: 1.25, h: 1, finger: 'thumb', isModifier: true },
+  { code: 'Fn',        label: 'fn',   x: xPos(0),   y: ROW_Y[4], w: 1,    h: 1, finger: 'thumb', isModifier: true, labelAlign: 'bottom-left' },
+  { code: 'ControlLeft', label: '⌃',  x: xPos(1),   y: ROW_Y[4], w: 1,    h: 1, finger: 'L-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'control' },
+  { code: 'AltLeft',   label: '⌥',   x: xPos(2),   y: ROW_Y[4], w: 1,    h: 1, finger: 'L-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'option' },
+  { code: 'MetaLeft',  label: '⌘',   x: xPos(3),   y: ROW_Y[4], w: 1.25, h: 1, finger: 'thumb', isModifier: true, labelAlign: 'bottom-left', word: 'command' },
   // 空格 & 右修饰键：加长空格让右边缘与其他行对齐 (x=946)
   { code: 'Space',     label: '',     x: 294.5,     y: ROW_Y[4], w: 6.2,  h: 1, finger: 'thumb' },
-  { code: 'MetaRight', label: '⌘',   x: 660.1,     y: ROW_Y[4], w: 1.25, h: 1, finger: 'thumb', isModifier: true },
-  { code: 'AltRight',  label: '⌥',   x: 738.6,     y: ROW_Y[4], w: 1,    h: 1, finger: 'R-pinky', isModifier: true },
+  { code: 'MetaRight', label: '⌘',   x: 660.1,     y: ROW_Y[4], w: 1.25, h: 1, finger: 'thumb', isModifier: true, labelAlign: 'bottom-left', word: 'command' },
+  { code: 'AltRight',  label: '⌥',   x: 738.6,     y: ROW_Y[4], w: 1,    h: 1, finger: 'R-pinky', isModifier: true, labelAlign: 'bottom-left', word: 'option' },
   // ── 方向键组（仿 MacBook）：四个等大键，呈 T 形 — ▲ 在上，◀ ▼ ▶ 在下 ──
   { code: 'ArrowUp',    label: '▲', x: 852,   y: ROW_Y[4],        w: 0.75, h: 0.5, finger: 'R-pinky', isModifier: true },
   { code: 'ArrowLeft',  label: '◀', x: 802.5, y: ROW_Y[4] + KH/2, w: 0.75, h: 0.5, finger: 'R-pinky', isModifier: true },

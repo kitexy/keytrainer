@@ -3,30 +3,45 @@
  *
  * SVG <g> 元素，包含圆角矩形 + 标签文字。
  * 根据状态切换颜色：default/正确/错误/当前/待击。
+ *
+ * 支持三种标签排布（仿真实 MacBook）：
+ *  - 居中：字母/数字键
+ *  - 左下角：修饰键（符号 + 小字名称，如 ⌫ delete / ⇧ shift）
+ *  - 上下叠放：含 Shift 符号的键（符号在上、主字符在下）
  */
 
 import type { Finger } from '../../types'
 
 export type KeyCapStatus = 'default' | 'current' | 'correct' | 'incorrect' | 'pending'
 
+export interface KeyData {
+  code: string
+  label: string
+  shiftLabel?: string
+  x: number
+  y: number
+  w: number
+  h: number
+  finger: Finger
+  /** 主图标/文字位置 */
+  labelAlign?: 'center' | 'bottom-left'
+  /** 左下角小字英文名称 */
+  word?: string
+  /** 覆盖默认标签字号 */
+  labelSize?: number
+}
+
 interface KeyCapProps {
   /** 键位布局数据 */
-  keyData: {
-    code: string
-    label: string
-    shiftLabel?: string
-    x: number
-    y: number
-    w: number
-    h: number
-    finger: Finger
-  }
+  keyData: KeyData
   /** 当前状态 */
   status: KeyCapStatus
   /** 是否显示指法分区颜色（半透明覆盖） */
   showFingerZones?: boolean
   /** 指法颜色 hex */
   fingerColor?: string
+  /** Caps Lock 指示灯是否点亮（仅 CapsLock 键有意义） */
+  capsOn?: boolean
   /** 自定义 class */
   className?: string
 }
@@ -34,6 +49,9 @@ interface KeyCapProps {
 const KW = 58   // 标准键宽
 const KH = 52   // 键高
 const RX = 8    // 圆角半径
+
+const MONO = "'SF Mono', 'JetBrains Mono', 'Fira Code', monospace"
+const SANS = "'PingFang SC', 'Helvetica Neue', system-ui, sans-serif"
 
 /** 状态 → 颜色映射 */
 const STATUS_COLORS: Record<KeyCapStatus, { bg: string; border: string; text: string }> = {
@@ -49,12 +67,17 @@ export default function KeyCap({
   status,
   showFingerZones = false,
   fingerColor = '#ffffff20',
+  capsOn = false,
   className = '',
 }: KeyCapProps) {
-  const { label, shiftLabel, x, y, w, h } = keyData
+  const { code, label, shiftLabel, x, y, w, h } = keyData
   const colors = STATUS_COLORS[status]
   const keyW = w * KW
   const keyH = h * KH
+
+  const isBottomLeft = keyData.labelAlign === 'bottom-left'
+  // 主标签字号：小键自适应
+  const baseFontSize = keyData.labelSize ?? (keyH < KH ? 10 : keyW < KW ? 11 : 16)
 
   return (
     <g className={`keycap keycap--${status} ${className}`}>
@@ -89,35 +112,95 @@ export default function KeyCap({
         `}
       />
 
-      {/* 主标签（小键自适应缩小字号） */}
-      <text
-        x={x + keyW / 2}
-        y={y + keyH / 2}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fill={colors.text}
-        fontSize={keyH < KH ? 10 : keyW < KW ? 11 : 16}
-        fontFamily="'SF Mono', 'JetBrains Mono', 'Fira Code', monospace"
-        fontWeight={500}
-        className="pointer-events-none select-none"
-      >
-        {label}
-      </text>
-
-      {/* Shift 标签（右上角小字） */}
-      {shiftLabel && (
+      {/* ── 标签渲染 ─────────────────────────────── */}
+      {isBottomLeft ? (
+        // 修饰键：符号 + 小字名称，置于左下角（仿 MacBook）
+        <>
+          <text
+            x={x + 10}
+            y={y + keyH - 10}
+            textAnchor="start"
+            dominantBaseline="central"
+            fill={colors.text}
+            fontSize={13}
+            fontFamily={MONO}
+            fontWeight={500}
+            className="pointer-events-none select-none"
+          >
+            {label}
+          </text>
+          {keyData.word && (
+            <text
+              x={x + 10 + (label ? 17 : 0)}
+              y={y + keyH - 10}
+              textAnchor="start"
+              dominantBaseline="central"
+              fill={colors.text}
+              fontSize={7.5}
+              fontFamily={SANS}
+              opacity={0.6}
+              className="pointer-events-none select-none"
+            >
+              {keyData.word}
+            </text>
+          )}
+        </>
+      ) : shiftLabel ? (
+        // 含 Shift 符号的键：符号在上、主字符在下（仿 MacBook 数字/符号行）
+        <>
+          <text
+            x={x + keyW / 2}
+            y={y + 13}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill={colors.text}
+            fontSize={9}
+            fontFamily={MONO}
+            opacity={0.6}
+            className="pointer-events-none select-none"
+          >
+            {shiftLabel}
+          </text>
+          <text
+            x={x + keyW / 2}
+            y={y + keyH / 2 + 4}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill={colors.text}
+            fontSize={baseFontSize}
+            fontFamily={MONO}
+            fontWeight={500}
+            className="pointer-events-none select-none"
+          >
+            {label}
+          </text>
+        </>
+      ) : (
+        // 默认居中
         <text
-          x={x + keyW - 8}
-          y={y + 16}
-          textAnchor="end"
+          x={x + keyW / 2}
+          y={y + keyH / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
           fill={colors.text}
-          fontSize={9}
-          opacity={0.5}
-          fontFamily="'SF Mono', 'JetBrains Mono', monospace"
+          fontSize={baseFontSize}
+          fontFamily={MONO}
+          fontWeight={500}
           className="pointer-events-none select-none"
         >
-          {shiftLabel}
+          {label}
         </text>
+      )}
+
+      {/* Caps Lock 大小写指示灯（左上角小圆点，点亮=大写开启） */}
+      {code === 'CapsLock' && (
+        <circle
+          cx={x + 12}
+          cy={y + 12}
+          r={3}
+          fill={capsOn ? '#a6e3a1' : '#45475a'}
+          className={capsOn ? 'animate-key-pulse' : ''}
+        />
       )}
     </g>
   )

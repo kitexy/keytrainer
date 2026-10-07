@@ -5,7 +5,7 @@
  * 正确/错误键反馈、指法分区颜色覆盖层。
  */
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTypingStore } from '../../stores/typingStore'
 import type { KeyCapStatus } from './KeyCap'
 import KeyCap from './KeyCap'
@@ -27,6 +27,22 @@ export default function Keyboard({ showFingerZones = false, showHandGuide = fals
   const currentIndex = useTypingStore(s => s.currentIndex)
   const keystrokes = useTypingStore(s => s.keystrokes)
   const sessionStatus = useTypingStore(s => s.sessionStatus)
+
+  // 大小写（Caps Lock）状态 — 用于键盘指示灯
+  const [capsOn, setCapsOn] = useState(false)
+  useEffect(() => {
+    const sync = (e: KeyboardEvent) => {
+      if (typeof e.getModifierState === 'function') {
+        setCapsOn(e.getModifierState('CapsLock'))
+      }
+    }
+    window.addEventListener('keydown', sync)
+    window.addEventListener('keyup', sync)
+    return () => {
+      window.removeEventListener('keydown', sync)
+      window.removeEventListener('keyup', sync)
+    }
+  }, [])
 
   // 当前待击字符 → 对应的键盘布局
   const currentChar = sessionStatus === 'running' ? targetText[currentIndex] : null
@@ -79,6 +95,7 @@ export default function Keyboard({ showFingerZones = false, showHandGuide = fals
               status={status}
               showFingerZones={showFingerZones}
               fingerColor={FINGER_COLORS[key.finger]}
+              capsOn={key.code === 'CapsLock' ? capsOn : undefined}
             />
           )
         })}
